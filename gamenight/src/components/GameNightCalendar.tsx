@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { CalendarDaysIcon, UsersIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, isToday } from 'date-fns';
 import { useRequireAuth } from '../hooks/useRequireAuth';
@@ -37,6 +37,14 @@ const mockEvents = [
 export default function GameNightCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { withAuth } = useRequireAuth();
+
+  const handleTodayClick = useCallback(() => {
+    setCurrentDate(new Date());
+  }, []);
+
+  const handleMonthChange = useCallback((newDate: Date) => {
+    setCurrentDate(newDate);
+  }, []);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -107,9 +115,8 @@ export default function GameNightCalendar() {
 
       {/* Month Navigation */}
       <MonthCarousel 
-        currentDate={currentDate}
-        onMonthChange={setCurrentDate}
-        onTodayClick={() => setCurrentDate(new Date())}
+        onMonthChange={handleMonthChange}
+        onTodayClick={handleTodayClick}
       />
 
       {/* Desktop Calendar Grid */}
