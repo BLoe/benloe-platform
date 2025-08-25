@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { CalendarDaysIcon, UsersIcon, ClockIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, UsersIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, isToday } from 'date-fns';
 import { useRequireAuth } from '../hooks/useRequireAuth';
+import MonthCarousel from './MonthCarousel';
 import clsx from 'clsx';
 
 // Mock data for demonstration
@@ -35,38 +36,7 @@ const mockEvents = [
 
 export default function GameNightCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [animationDirection, setAnimationDirection] = useState<'prev' | 'next' | null>(null);
   const { withAuth } = useRequireAuth();
-
-  // Helper functions for carousel navigation
-  const getPrevMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() - 1);
-  const getNextMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1);
-  
-  const shouldShowYear = (date: Date) => {
-    const month = date.getMonth();
-    return month === 11 || month === 0; // December or January
-  };
-
-  const handleMonthChange = (direction: 'prev' | 'next') => {
-    if (isAnimating) return;
-    
-    setIsAnimating(true);
-    setAnimationDirection(direction);
-    
-    setTimeout(() => {
-      if (direction === 'prev') {
-        setCurrentDate(getPrevMonth(currentDate));
-      } else {
-        setCurrentDate(getNextMonth(currentDate));
-      }
-      
-      setTimeout(() => {
-        setIsAnimating(false);
-        setAnimationDirection(null);
-      }, 300);
-    }, 150);
-  };
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -135,84 +105,12 @@ export default function GameNightCalendar() {
         </div>
       </div>
 
-      {/* Carousel Month Navigation */}
-      <div className="flex items-center justify-center mb-6 py-4">
-        <div className="flex items-center space-x-6">
-          {/* Previous Month Button */}
-          <button
-            onClick={() => handleMonthChange('prev')}
-            disabled={isAnimating}
-            className="flex items-center space-x-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
-          >
-            <ChevronLeftIcon className="h-5 w-5" />
-            <div className="text-right">
-              {shouldShowYear(getPrevMonth(currentDate)) && (
-                <div className="text-xs text-gray-400 font-medium">
-                  {format(getPrevMonth(currentDate), 'yyyy')}
-                </div>
-              )}
-              <div className="text-sm font-medium">
-                {format(getPrevMonth(currentDate), 'MMMM')}
-              </div>
-            </div>
-          </button>
-
-          {/* Current Month */}
-          <div className="relative overflow-hidden">
-            <div
-              className={clsx(
-                'transition-all duration-300 ease-in-out',
-                isAnimating && animationDirection === 'prev' && 'transform translate-x-8 scale-90 opacity-0',
-                isAnimating && animationDirection === 'next' && 'transform -translate-x-8 scale-90 opacity-0',
-                !isAnimating && 'transform translate-x-0 scale-100 opacity-100'
-              )}
-            >
-              <div className="text-center">
-                {shouldShowYear(currentDate) && (
-                  <div className="text-sm text-gray-400 font-medium">
-                    {format(currentDate, 'yyyy')}
-                  </div>
-                )}
-                <div className="text-2xl font-bold text-gray-900">
-                  {format(currentDate, 'MMMM')}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Next Month Button */}
-          <button
-            onClick={() => handleMonthChange('next')}
-            disabled={isAnimating}
-            className="flex items-center space-x-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
-          >
-            <div className="text-left">
-              {shouldShowYear(getNextMonth(currentDate)) && (
-                <div className="text-xs text-gray-400 font-medium">
-                  {format(getNextMonth(currentDate), 'yyyy')}
-                </div>
-              )}
-              <div className="text-sm font-medium">
-                {format(getNextMonth(currentDate), 'MMMM')}
-              </div>
-            </div>
-            <ChevronRightIcon className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Today Button */}
-        <button
-          onClick={() => {
-            if (!isAnimating) {
-              setCurrentDate(new Date());
-            }
-          }}
-          disabled={isAnimating}
-          className="ml-8 px-3 py-1 text-sm text-indigo-600 hover:text-indigo-700 border border-indigo-200 rounded-md hover:bg-indigo-50 transition-colors disabled:opacity-50"
-        >
-          Today
-        </button>
-      </div>
+      {/* Month Navigation */}
+      <MonthCarousel 
+        currentDate={currentDate}
+        onMonthChange={setCurrentDate}
+        onTodayClick={() => setCurrentDate(new Date())}
+      />
 
       {/* Desktop Calendar Grid */}
       <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
