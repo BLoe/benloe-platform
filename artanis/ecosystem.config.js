@@ -1,19 +1,21 @@
 module.exports = {
-  apps: [{
-    name: 'artanis-auth',
-    script: 'dist/server.js',
-    cwd: '/var/apps/artanis',
-    instances: 1,
-    autorestart: true,
-    watch: false,
-    max_memory_restart: '1G',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 3002
+  apps: [
+    {
+      name: 'artanis-auth',
+      script: 'dist/server.js',
+      cwd: '/var/apps/artanis',
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3002,
+      },
+      error_file: './logs/err.log',
+      out_file: './logs/out.log',
+      log_file: './logs/combined.log',
+      time: true,
     },
-    error_file: './logs/err.log',
-    out_file: './logs/out.log',
-    log_file: './logs/combined.log',
-    time: true
-  }]
+  ],
 };

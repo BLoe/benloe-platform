@@ -24,5 +24,5 @@ export interface AuthResponse {
 
 export interface AuthError {
   error: string;
-  details?: any;
+  details?: unknown;
 }

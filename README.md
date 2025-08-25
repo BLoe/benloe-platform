@@ -7,7 +7,7 @@ This monorepo contains all the applications and shared utilities that power the 
 ## 📦 Workspaces
 
 - **`artanis/`** - Authentication service with magic link login
-- **`homepage/`** - Main benloe.com homepage with project showcase  
+- **`homepage/`** - Main benloe.com homepage with project showcase
 - **`gamenight/`** - Board game night scheduling application
 - **`shared/`** - Shared utilities, types, and components
 
@@ -30,6 +30,7 @@ npm run test
 ## 🔧 Development
 
 Each workspace is a separate application with its own:
+
 - Dependencies and package.json
 - Build configuration
 - Deployment setup
@@ -44,6 +45,7 @@ Each workspace is a separate application with its own:
 ## 🌐 Deployment
 
 Applications are deployed independently via PM2:
+
 - **artanis**: `pm2 start artanis/ecosystem.config.js`
 - **gamenight**: `pm2 start gamenight/ecosystem.config.js`
 

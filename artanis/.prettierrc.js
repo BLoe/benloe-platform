@@ -10,17 +10,17 @@ module.exports = {
   bracketSpacing: true,
   bracketSameLine: false,
   arrowParens: 'always',
-  
+
   // Prose formatting
   proseWrap: 'preserve',
   htmlWhitespaceSensitivity: 'css',
-  
+
   // Vue specific (not needed but good to have)
   vueIndentScriptAndStyle: false,
-  
+
   // End of line
   endOfLine: 'lf',
-  
+
   // Embedded language formatting
   embeddedLanguageFormatting: 'auto',
 };

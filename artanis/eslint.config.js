@@ -17,23 +17,26 @@ module.exports = [
     },
     plugins: {
       '@typescript-eslint': typescriptEslint,
-      'prettier': prettierPlugin,
-      'import': importPlugin,
-      'security': securityPlugin,
+      prettier: prettierPlugin,
+      import: importPlugin,
+      security: securityPlugin,
     },
     rules: {
       // Base ESLint rules
       'prefer-const': 'error',
       'no-var': 'error',
       'no-unused-vars': 'off', // Use TypeScript version
-      'eqeqeq': ['error', 'always'],
-      'curly': ['error', 'all'],
+      eqeqeq: ['error', 'always'],
+      curly: ['error', 'all'],
       'no-throw-literal': 'error',
       'prefer-promise-reject-errors': 'error',
       'no-console': 'off', // We use console for logging
 
       // TypeScript specific rules
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',

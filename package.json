@@ -5,7 +5,7 @@
   "private": true,
   "workspaces": [
     "artanis",
-    "homepage", 
+    "homepage",
     "gamenight",
     "shared"
   ],
@@ -13,10 +13,18 @@
     "dev": "npm run dev --workspaces",
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prettier": "prettier --check .",
+    "prettier:fix": "prettier --write .",
+    "clean-code": "npm run prettier:fix && npm run lint:fix"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
   },
   "engines": {
     "node": ">=18.0.0"

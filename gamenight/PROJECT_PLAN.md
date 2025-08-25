@@ -9,12 +9,14 @@ A delightful board game scheduling app that solves the commitment problem throug
 ### Decision: Build Unified Auth for benloe.com
 
 **Benefits with AI code generation:**
+
 - Single user database across all benloe.com subprojects
 - JWT tokens with subdomain cookie sharing
 - Consistent user experience
 - ~200 lines of boilerplate that AI generates perfectly
 
 ### Architecture
+
 ```
 auth.benloe.com (Express service)
 ├── /api/auth/magic-link    # Send magic link email
@@ -27,6 +29,7 @@ gamenight.benloe.com
 ```
 
 ### Implementation
+
 - Magic link authentication (no passwords)
 - 30-day persistent sessions
 - Cross-subdomain cookie sharing
@@ -46,7 +49,7 @@ model User {
   timezone    String   @default("UTC")
   createdAt   DateTime @default(now())
   lastLoginAt DateTime?
-  
+
   // Game Night specific relations
   createdEvents Event[] @relation("EventCreator")
   commitments   Commitment[]
@@ -66,9 +69,9 @@ model Game {
   imageUrl    String?
   description String?
   bestWith    String? // "3-4" players recommended
-  
+
   events Event[]
-  
+
   @@index([name])
 }
 
@@ -82,21 +85,21 @@ model Event {
   status      EventStatus @default(OPEN)
   createdAt   DateTime    @default(now())
   commitmentDeadline DateTime?
-  
+
   game        Game   @relation(fields: [gameId], references: [id])
   gameId      String
   creator     User   @relation("EventCreator", fields: [creatorId], references: [id])
   creatorId   String
-  
+
   // Recurring events
   recurringPattern   RecurringPattern?
   parentEvent        Event? @relation("RecurringSeries", fields: [parentEventId], references: [id])
   parentEventId      String?
   childEvents        Event[] @relation("RecurringSeries")
-  
+
   commitments Commitment[]
   reminders   EventReminder[]
-  
+
   @@index([dateTime])
   @@index([status])
 }
@@ -107,7 +110,7 @@ model RecurringPattern {
   frequency RecurrenceType   // WEEKLY, BIWEEKLY, MONTHLY
   interval  Int             @default(1)
   endDate   DateTime?
-  
+
   event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId   String @unique
 }
@@ -118,12 +121,12 @@ model Commitment {
   status   CommitmentStatus @default(COMMITTED)
   joinedAt DateTime         @default(now())
   notes    String?
-  
+
   event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId String
   user    User   @relation(fields: [userId], references: [id])
   userId  String
-  
+
   @@unique([eventId, userId])
 }
 
@@ -135,10 +138,10 @@ model EventReminder {
   reminderAt DateTime
   sent       Boolean  @default(false)
   type       ReminderType @default(BEFORE_EVENT)
-  
+
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id])
-  
+
   @@unique([eventId, userId, type])
 }
 
@@ -149,7 +152,7 @@ model CalendarSubscription {
   token     String   @unique @default(cuid())
   createdAt DateTime @default(now())
   active    Boolean  @default(true)
-  
+
   user User @relation(fields: [userId], references: [id])
 }
 
@@ -168,7 +171,7 @@ enum CommitmentStatus {
 
 enum RecurrenceType {
   WEEKLY
-  BIWEEKLY  
+  BIWEEKLY
   MONTHLY
 }
 
@@ -182,6 +185,7 @@ enum ReminderType {
 ## 🏗️ Implementation Phases (Dependency Order)
 
 ### Phase 1: Authentication Foundation
+
 **Goal:** Unified auth system across benloe.com
 
 1. **Auth Service Setup**
@@ -202,6 +206,7 @@ enum ReminderType {
    - Protected route setup
 
 ### Phase 2: Core Data Layer
+
 **Goal:** Complete database foundation
 
 1. **Database Setup**
@@ -217,6 +222,7 @@ enum ReminderType {
    - Commitment management
 
 ### Phase 3: Game Library System
+
 **Goal:** BoardGameGeek integration
 
 1. **BGG API Client**
@@ -233,6 +239,7 @@ enum ReminderType {
    - Game data enrichment
 
 ### Phase 4: Event Management
+
 **Goal:** Core scheduling functionality
 
 1. **Event Creation**
@@ -249,6 +256,7 @@ enum ReminderType {
    - Status updates
 
 ### Phase 5: Recurring Events
+
 **Goal:** Pattern-based scheduling
 
 1. **Pattern Creation**
@@ -262,6 +270,7 @@ enum ReminderType {
    - Commitment propagation
 
 ### Phase 6: Calendar Integration
+
 **Goal:** External calendar sync
 
 1. **ICS Generation**
@@ -276,6 +285,7 @@ enum ReminderType {
    - Calendar client compatibility
 
 ### Phase 7: Email System
+
 **Goal:** Notification and reminders
 
 1. **Email Templates**
@@ -290,6 +300,7 @@ enum ReminderType {
    - Delivery tracking
 
 ### Phase 8: Frontend Foundation
+
 **Goal:** React application setup
 
 1. **Project Setup**
@@ -305,6 +316,7 @@ enum ReminderType {
    - Layout components
 
 ### Phase 9: Core Pages
+
 **Goal:** Complete user interface
 
 1. **Home/Event Feed**
@@ -338,6 +350,7 @@ enum ReminderType {
    - Settings and preferences
 
 ### Phase 10: Polish & Deployment
+
 **Goal:** Production-ready application
 
 1. **Mobile Optimization**
@@ -365,6 +378,7 @@ enum ReminderType {
 ## 🎯 Complete Feature Set
 
 ### Event Management
+
 - Create one-time and recurring events
 - Enforced player limits with waitlist
 - Location and rich description support
@@ -373,6 +387,7 @@ enum ReminderType {
 - Host controls (edit, cancel, manage)
 
 ### Game Integration
+
 - BoardGameGeek search and import
 - Game complexity indicators
 - "Best with X players" recommendations
@@ -381,6 +396,7 @@ enum ReminderType {
 - Game artwork display
 
 ### Calendar & Reminders
+
 - Personal .ics calendar feeds
 - Individual event exports
 - Email reminders (24h before events)
@@ -389,6 +405,7 @@ enum ReminderType {
 - Timezone support
 
 ### User Experience
+
 - Unified benloe.com authentication
 - Magic link login (no passwords)
 - Display name and avatar
@@ -397,6 +414,7 @@ enum ReminderType {
 - Personalized dashboard
 
 ### Social Features
+
 - Shareable event links
 - Commitment visibility
 - Waitlist with auto-promotion
@@ -406,6 +424,7 @@ enum ReminderType {
 ## 🔧 Technical Architecture
 
 ### Frontend Stack
+
 ```typescript
 React + TypeScript + Vite
 Tailwind CSS + HeadlessUI
@@ -415,6 +434,7 @@ date-fns (date handling)
 ```
 
 ### Backend Stack
+
 ```typescript
 Node.js + Express + TypeScript
 Prisma ORM + SQLite/PostgreSQL
@@ -424,17 +444,19 @@ node-cron (scheduling)
 ```
 
 ### Shared Services
+
 ```typescript
 // Service architecture
-AuthService       // JWT validation, magic links
-EventService      // CRUD, recurrence, validation  
-GameService       // BGG import, search
-EmailService      // Templates, scheduling
-CalendarService   // ICS generation
-NotificationService // Reminders, digests
+AuthService; // JWT validation, magic links
+EventService; // CRUD, recurrence, validation
+GameService; // BGG import, search
+EmailService; // Templates, scheduling
+CalendarService; // ICS generation
+NotificationService; // Reminders, digests
 ```
 
 ### Component Architecture
+
 ```typescript
 // Shared UI components
 <EventCard />           // Event display with actions
@@ -461,6 +483,7 @@ benloe.com
 ```
 
 ### Caddy Configuration
+
 ```caddy
 auth.benloe.com {
   reverse_proxy localhost:3002
@@ -475,6 +498,7 @@ gamenight.benloe.com {
 ## 📈 Development Strategy for AI Tools
 
 ### Prompt Engineering Patterns
+
 1. **"Generate Prisma schema for [feature] with [constraints]"**
 2. **"Create TypeScript service with error handling for [operation]"**
 3. **"Build React component with Tailwind styles for [UI element]"**
@@ -482,18 +506,21 @@ gamenight.benloe.com {
 5. **"Implement API endpoint with [authentication/authorization]"**
 
 ### Type-First Development
+
 - Generate TypeScript interfaces from Prisma schema
 - Create API contracts before implementation
 - Use strict TypeScript configuration
 - Let type errors guide AI code completion
 
 ### Component-Driven Development
+
 - Build isolated components with clear props
 - Compose components into pages
 - Consistent design system with Tailwind
 - Reusable business logic hooks
 
 ### Testing Strategy
+
 - Type safety as primary testing layer
 - Integration tests for API endpoints
 - Component testing for complex interactions
