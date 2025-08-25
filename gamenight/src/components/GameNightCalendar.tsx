@@ -47,6 +47,29 @@ export default function GameNightCalendar() {
     );
   };
 
+  // Get events organized by date for mobile view
+  const getEventsGroupedByDate = () => {
+    const grouped: { [key: string]: typeof mockEvents } = {};
+    const currentMonth = format(currentDate, 'yyyy-MM');
+    
+    mockEvents
+      .filter(event => format(new Date(event.dateTime), 'yyyy-MM') === currentMonth)
+      .forEach(event => {
+        const dateKey = format(new Date(event.dateTime), 'yyyy-MM-dd');
+        if (!grouped[dateKey]) {
+          grouped[dateKey] = [];
+        }
+        grouped[dateKey].push(event);
+      });
+    
+    return Object.keys(grouped)
+      .sort()
+      .map(dateKey => ({
+        date: new Date(dateKey),
+        events: grouped[dateKey] || []
+      }));
+  };
+
   const handleScheduleGameNight = () => {
     withAuth(() => {
       alert('Opening game night scheduler...');
@@ -108,8 +131,8 @@ export default function GameNightCalendar() {
         </div>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Desktop Calendar Grid */}
+      <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
         <div className="grid grid-cols-7 gap-px bg-gray-200">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
             <div key={day} className="bg-gray-50 py-2 px-3 text-center text-xs font-semibold text-gray-700">
@@ -155,6 +178,92 @@ export default function GameNightCalendar() {
             );
           })}
         </div>
+      </div>
+
+      {/* Mobile Card List */}
+      <div className="md:hidden space-y-4">
+        {getEventsGroupedByDate().map(({ date, events }) => (
+          <div key={date.toISOString()} className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {format(date, 'EEEE, MMM d')}
+                </h3>
+                {isToday(date) && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    Today
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="divide-y divide-gray-200">
+              {events.map((event) => (
+                <div
+                  key={event.id}
+                  className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => alert(`Event details for: ${event.title}`)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-base font-medium text-gray-900 truncate">
+                        {event.title || event.game.name}
+                      </h4>
+                      <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <ClockIcon className="h-4 w-4 mr-1" />
+                          {format(new Date(event.dateTime), 'h:mm a')}
+                        </div>
+                        <div className="flex items-center">
+                          <UsersIcon className="h-4 w-4 mr-1" />
+                          {event.commitments.length}/{event.game.maxPlayers}
+                        </div>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-600">
+                        Hosted by {event.creator.name}
+                      </p>
+                    </div>
+                    <div className="ml-4 flex flex-col items-end space-y-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleJoinEvent(event.id);
+                        }}
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      >
+                        Join
+                      </button>
+                      <span className={clsx(
+                        'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                        event.status === 'OPEN' && 'bg-green-100 text-green-800',
+                        event.status === 'FULL' && 'bg-red-100 text-red-800'
+                      )}>
+                        {event.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+        
+        {getEventsGroupedByDate().length === 0 && (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <CalendarDaysIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No events this month</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Get started by planning your first game night.
+            </p>
+            <div className="mt-6">
+              <button
+                onClick={handleScheduleGameNight}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Plan a Game Night
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Upcoming Events List */}
