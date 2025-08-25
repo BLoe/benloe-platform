@@ -11,7 +11,7 @@ interface MonthCarouselProps {
 
 export default function MonthCarousel({ currentDate, onMonthChange, onTodayClick }: MonthCarouselProps) {
   const [isAnimating, setIsAnimating] = useState(false);
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
+  const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
 
   const shouldShowYear = (date: Date) => {
     const month = date.getMonth();
@@ -25,31 +25,70 @@ export default function MonthCarousel({ currentDate, onMonthChange, onTodayClick
     if (isAnimating) return;
 
     setIsAnimating(true);
-    setSlideDirection(direction === 'prev' ? 'right' : 'left');
-
+    setAnimationDirection(direction === 'next' ? 'left' : 'right');
+    
     setTimeout(() => {
       const newDate = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth() + (direction === 'prev' ? -1 : 1)
       );
       onMonthChange(newDate);
-      setSlideDirection(null);
       setIsAnimating(false);
-    }, 300);
+      setAnimationDirection(null);
+    }, 400);
   };
 
-  const MonthLabel = ({ date, isCenter, className }: { date: Date; isCenter: boolean; className?: string }) => (
-    <div className={clsx('text-center flex-shrink-0', className)}>
+  // Create month labels with their data
+  const prevMonth = getPrevMonth(currentDate);
+  const nextMonth = getNextMonth(currentDate);
+  const afterNextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2);
+  const beforePrevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2);
+
+  const MonthDisplay = ({ 
+    date, 
+    basePosition, 
+    isCenter,
+    onClick
+  }: { 
+    date: Date; 
+    basePosition: 'left' | 'center' | 'right';
+    isCenter: boolean;
+    onClick?: () => void;
+  }) => (
+    <div 
+      className={clsx(
+        'absolute text-center transition-all duration-400 ease-in-out',
+        onClick && 'cursor-pointer',
+        // Base positions (no animation)
+        !isAnimating && basePosition === 'left' && 'left-0',
+        !isAnimating && basePosition === 'center' && 'left-1/2 transform -translate-x-1/2', 
+        !isAnimating && basePosition === 'right' && 'right-0',
+        
+        // Animation positions when sliding left (next month)
+        isAnimating && animationDirection === 'left' && basePosition === 'left' && '-left-20 opacity-0',
+        isAnimating && animationDirection === 'left' && basePosition === 'center' && 'left-0',
+        isAnimating && animationDirection === 'left' && basePosition === 'right' && 'left-1/2 transform -translate-x-1/2',
+        
+        // Animation positions when sliding right (prev month)  
+        isAnimating && animationDirection === 'right' && basePosition === 'left' && 'left-1/2 transform -translate-x-1/2',
+        isAnimating && animationDirection === 'right' && basePosition === 'center' && 'right-0', 
+        isAnimating && animationDirection === 'right' && basePosition === 'right' && '-right-20 opacity-0',
+        
+        // Text colors
+        isCenter ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+      )}
+      onClick={onClick}
+    >
       {shouldShowYear(date) && (
         <div className={clsx(
-          'text-gray-400 font-medium',
+          'text-gray-400 font-medium transition-all duration-400',
           isCenter ? 'text-sm' : 'text-xs'
         )}>
           {format(date, 'yyyy')}
         </div>
       )}
       <div className={clsx(
-        'font-bold text-gray-900',
+        'font-bold transition-all duration-400',
         isCenter ? 'text-2xl' : 'text-sm'
       )}>
         {format(date, 'MMMM')}
@@ -69,7 +108,7 @@ export default function MonthCarousel({ currentDate, onMonthChange, onTodayClick
       </button>
 
       {/* Month Carousel */}
-      <div className="relative flex items-center space-x-8">
+      <div className="flex items-center space-x-8">
         {/* Previous Button */}
         <button
           onClick={() => handleNavigation('prev')}
@@ -80,67 +119,44 @@ export default function MonthCarousel({ currentDate, onMonthChange, onTodayClick
         </button>
 
         {/* Months Container */}
-        <div className="relative overflow-hidden w-80 h-16">
-          {/* Current View */}
-          <div
-            className={clsx(
-              'absolute inset-0 flex items-center justify-between px-8 transition-transform duration-300 ease-in-out',
-              slideDirection === 'left' && 'transform -translate-x-full',
-              slideDirection === 'right' && 'transform translate-x-full'
-            )}
-          >
-            <MonthLabel 
-              date={getPrevMonth(currentDate)} 
-              isCenter={false}
-              className="text-gray-500 cursor-pointer hover:text-gray-700"
-            />
-            <MonthLabel 
-              date={currentDate} 
-              isCenter={true}
-            />
-            <MonthLabel 
-              date={getNextMonth(currentDate)} 
-              isCenter={false}
-              className="text-gray-500 cursor-pointer hover:text-gray-700"
-            />
-          </div>
-
-          {/* Next View (sliding in from right) */}
-          {slideDirection === 'left' && (
-            <div className="absolute inset-0 flex items-center justify-between px-8 transform translate-x-full transition-transform duration-300 ease-in-out -translate-x-0">
-              <MonthLabel 
-                date={currentDate} 
+        <div className="relative w-80 h-16 flex items-center overflow-hidden">
+          {/* Main visible months */}
+          <MonthDisplay 
+            date={prevMonth}
+            basePosition="left"
+            isCenter={isAnimating && animationDirection === 'right'}
+            onClick={() => handleNavigation('prev')}
+          />
+          <MonthDisplay 
+            date={currentDate}
+            basePosition="center"
+            isCenter={!isAnimating}
+          />
+          <MonthDisplay 
+            date={nextMonth}
+            basePosition="right"
+            isCenter={isAnimating && animationDirection === 'left'}
+            onClick={() => handleNavigation('next')}
+          />
+          
+          {/* Incoming month from right during left slide */}
+          {isAnimating && animationDirection === 'left' && (
+            <div className="absolute right-0 transform translate-x-full transition-all duration-400 ease-in-out translate-x-0">
+              <MonthDisplay 
+                date={afterNextMonth}
+                basePosition="right"
                 isCenter={false}
-                className="text-gray-500"
-              />
-              <MonthLabel 
-                date={getNextMonth(currentDate)} 
-                isCenter={true}
-              />
-              <MonthLabel 
-                date={new Date(currentDate.getFullYear(), currentDate.getMonth() + 2)} 
-                isCenter={false}
-                className="text-gray-500"
               />
             </div>
           )}
-
-          {/* Previous View (sliding in from left) */}
-          {slideDirection === 'right' && (
-            <div className="absolute inset-0 flex items-center justify-between px-8 transform -translate-x-full transition-transform duration-300 ease-in-out translate-x-0">
-              <MonthLabel 
-                date={new Date(currentDate.getFullYear(), currentDate.getMonth() - 2)} 
+          
+          {/* Incoming month from left during right slide */}
+          {isAnimating && animationDirection === 'right' && (
+            <div className="absolute left-0 transform -translate-x-full transition-all duration-400 ease-in-out translate-x-0">
+              <MonthDisplay 
+                date={beforePrevMonth}
+                basePosition="left"
                 isCenter={false}
-                className="text-gray-500"
-              />
-              <MonthLabel 
-                date={getPrevMonth(currentDate)} 
-                isCenter={true}
-              />
-              <MonthLabel 
-                date={currentDate} 
-                isCenter={false}
-                className="text-gray-500"
               />
             </div>
           )}
