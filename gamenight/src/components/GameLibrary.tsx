@@ -57,30 +57,38 @@ export default function GameLibrary() {
   const [selectedPlayerCount, setSelectedPlayerCount] = useState<number | null>(null);
   const { withAuth } = useRequireAuth();
 
-  const filteredGames = mockGames.filter(game => {
+  const filteredGames = mockGames.filter((game) => {
     const matchesSearch = game.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesComplexity = selectedComplexity === null || 
+    const matchesComplexity =
+      selectedComplexity === null ||
       (game.complexity && Math.floor(game.complexity) === selectedComplexity);
-    const matchesPlayerCount = selectedPlayerCount === null ||
+    const matchesPlayerCount =
+      selectedPlayerCount === null ||
       (selectedPlayerCount >= game.minPlayers && selectedPlayerCount <= game.maxPlayers);
-    
+
     return matchesSearch && matchesComplexity && matchesPlayerCount;
   });
 
   const handleAddGame = () => {
-    withAuth(() => {
-      alert('Opening add game form...');
-    }, {
-      message: 'You need to sign in to add games to the library. Would you like to sign in now?'
-    });
+    withAuth(
+      () => {
+        alert('Opening add game form...');
+      },
+      {
+        message: 'You need to sign in to add games to the library. Would you like to sign in now?',
+      }
+    );
   };
 
   const handleScheduleWithGame = (_gameId: string, gameName: string) => {
-    withAuth(() => {
-      alert(`Scheduling game night with ${gameName}...`);
-    }, {
-      message: 'You need to sign in to schedule a game night. Would you like to sign in now?'
-    });
+    withAuth(
+      () => {
+        alert(`Scheduling game night with ${gameName}...`);
+      },
+      {
+        message: 'You need to sign in to schedule a game night. Would you like to sign in now?',
+      }
+    );
   };
 
   const getComplexityLabel = (complexity: number) => {
@@ -103,7 +111,9 @@ export default function GameLibrary() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Game Library</h1>
-          <p className="text-gray-600 mt-2">Browse and discover board games for your next game night</p>
+          <p className="text-gray-600 mt-2">
+            Browse and discover board games for your next game night
+          </p>
         </div>
         <button
           onClick={handleAddGame}
@@ -143,7 +153,9 @@ export default function GameLibrary() {
             <select
               id="complexity"
               value={selectedComplexity || ''}
-              onChange={(e) => setSelectedComplexity(e.target.value ? Number(e.target.value) : null)}
+              onChange={(e) =>
+                setSelectedComplexity(e.target.value ? Number(e.target.value) : null)
+              }
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
               <option value="">All Complexities</option>
@@ -162,7 +174,9 @@ export default function GameLibrary() {
             <select
               id="players"
               value={selectedPlayerCount || ''}
-              onChange={(e) => setSelectedPlayerCount(e.target.value ? Number(e.target.value) : null)}
+              onChange={(e) =>
+                setSelectedPlayerCount(e.target.value ? Number(e.target.value) : null)
+              }
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
               <option value="">Any Player Count</option>
@@ -178,7 +192,10 @@ export default function GameLibrary() {
       {/* Games Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredGames.map((game) => (
-          <div key={game.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+          <div
+            key={game.id}
+            className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+          >
             <img
               src={game.imageUrl}
               alt={game.name}
@@ -186,12 +203,12 @@ export default function GameLibrary() {
             />
             <div className="p-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">{game.name}</h3>
-              
+
               <div className="space-y-2 mb-4">
                 <div className="flex items-center text-sm text-gray-600">
                   <UsersIcon className="h-4 w-4 mr-1" />
-                  {game.minPlayers === game.maxPlayers 
-                    ? `${game.minPlayers} players` 
+                  {game.minPlayers === game.maxPlayers
+                    ? `${game.minPlayers} players`
                     : `${game.minPlayers}-${game.maxPlayers} players`}
                   {game.bestWith && (
                     <span className="ml-2 text-indigo-600 font-medium">
@@ -199,30 +216,30 @@ export default function GameLibrary() {
                     </span>
                   )}
                 </div>
-                
+
                 {game.duration && (
                   <div className="flex items-center text-sm text-gray-600">
                     <ClockIcon className="h-4 w-4 mr-1" />
                     {game.duration} minutes
                   </div>
                 )}
-                
+
                 {game.complexity && (
                   <div className="flex items-center">
                     <span className="text-sm text-gray-600 mr-2">Complexity:</span>
-                    <span className={clsx(
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                      getComplexityColor(game.complexity)
-                    )}>
+                    <span
+                      className={clsx(
+                        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                        getComplexityColor(game.complexity)
+                      )}
+                    >
                       {getComplexityLabel(game.complexity)} ({game.complexity})
                     </span>
                   </div>
                 )}
               </div>
 
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                {game.description}
-              </p>
+              <p className="text-sm text-gray-600 mb-4 line-clamp-2">{game.description}</p>
 
               <button
                 onClick={() => handleScheduleWithGame(game.id, game.name)}

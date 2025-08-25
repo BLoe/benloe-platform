@@ -13,17 +13,20 @@ function MonthCarousel({ onMonthChange, onTodayClick }: MonthCarouselProps) {
   const [isAnimating, setIsAnimating] = useState(false);
 
   // Static slots that never change
-  const MONTH_SLOTS = useMemo(() => [
-    { id: 'slot-0', position: -2 },
-    { id: 'slot-1', position: -1 }, 
-    { id: 'slot-2', position: 0 },
-    { id: 'slot-3', position: 1 },
-    { id: 'slot-4', position: 2 }
-  ], []);
+  const MONTH_SLOTS = useMemo(
+    () => [
+      { id: 'slot-0', position: -2 },
+      { id: 'slot-1', position: -1 },
+      { id: 'slot-2', position: 0 },
+      { id: 'slot-3', position: 1 },
+      { id: 'slot-4', position: 2 },
+    ],
+    []
+  );
 
   // Calculate date for each slot based on activeIndex navigation
   const getSlotDate = (slotPosition: number) => {
-    const monthsFromBase = (activeIndex - 2) + slotPosition; // activeIndex 2 = center = baseDate
+    const monthsFromBase = activeIndex - 2 + slotPosition; // activeIndex 2 = center = baseDate
     return new Date(baseDate.getFullYear(), baseDate.getMonth() + monthsFromBase);
   };
 
@@ -45,28 +48,33 @@ function MonthCarousel({ onMonthChange, onTodayClick }: MonthCarouselProps) {
 
   const handleNext = () => {
     if (isAnimating) return;
-    
+
     setIsAnimating(true);
     setActiveIndex((prev) => (prev + 1) % MONTH_SLOTS.length);
-    
+
     setTimeout(() => setIsAnimating(false), 400);
   };
 
   const handlePrev = () => {
     if (isAnimating) return;
-    
+
     setIsAnimating(true);
     setActiveIndex((prev) => (prev - 1 + MONTH_SLOTS.length) % MONTH_SLOTS.length);
-    
+
     setTimeout(() => setIsAnimating(false), 400);
   };
 
   const handleMonthClick = (clickedIndex: number) => {
     if (isAnimating) return;
-    
+
     const distance = clickedIndex - activeIndex;
-    const wrappedDistance = distance > 2 ? distance - MONTH_SLOTS.length : distance < -2 ? distance + MONTH_SLOTS.length : distance;
-    
+    const wrappedDistance =
+      distance > 2
+        ? distance - MONTH_SLOTS.length
+        : distance < -2
+          ? distance + MONTH_SLOTS.length
+          : distance;
+
     if (wrappedDistance === 1) {
       handleNext();
     } else if (wrappedDistance === -1) {
@@ -76,7 +84,7 @@ function MonthCarousel({ onMonthChange, onTodayClick }: MonthCarouselProps) {
 
   const handleTodayClick = () => {
     if (isAnimating) return;
-    
+
     // Reset to initial state (today is baseDate, activeIndex 2 is center)
     setActiveIndex(2);
     onTodayClick();
@@ -84,7 +92,12 @@ function MonthCarousel({ onMonthChange, onTodayClick }: MonthCarouselProps) {
 
   const getSlotPosition = (slotIndex: number, activeIndex: number) => {
     const distance = slotIndex - activeIndex;
-    const wrappedDistance = distance > 2 ? distance - MONTH_SLOTS.length : distance < -2 ? distance + MONTH_SLOTS.length : distance;
+    const wrappedDistance =
+      distance > 2
+        ? distance - MONTH_SLOTS.length
+        : distance < -2
+          ? distance + MONTH_SLOTS.length
+          : distance;
     return wrappedDistance * 80;
   };
 
@@ -114,11 +127,11 @@ function MonthCarousel({ onMonthChange, onTodayClick }: MonthCarouselProps) {
           const scale = getSlotScale(index, activeIndex);
           const fontSize = getSlotFontSize(index, activeIndex);
           const isActive = index === activeIndex;
-          
+
           const distance = Math.abs(index - activeIndex);
           const wrappedDistance = Math.min(distance, MONTH_SLOTS.length - distance);
           const isVisible = wrappedDistance <= 1;
-          
+
           return (
             <motion.div
               key={slot.id}
@@ -127,14 +140,18 @@ function MonthCarousel({ onMonthChange, onTodayClick }: MonthCarouselProps) {
               }`}
               initial={{ fontSize, scale, x }}
               animate={{ fontSize, scale, x }}
-              transition={isVisible ? {
-                type: "spring",
-                stiffness: 400,
-                damping: 35,
-                duration: 0.4
-              } : {
-                duration: 0,
-              }}
+              transition={
+                isVisible
+                  ? {
+                      type: 'spring',
+                      stiffness: 400,
+                      damping: 35,
+                      duration: 0.4,
+                    }
+                  : {
+                      duration: 0,
+                    }
+              }
               onClick={(e) => {
                 e.stopPropagation();
                 handleMonthClick(index);
@@ -143,13 +160,9 @@ function MonthCarousel({ onMonthChange, onTodayClick }: MonthCarouselProps) {
               whileTap={isVisible ? { scale: scale * 0.95 } : {}}
             >
               {shouldShowYear(slotDate) && (
-                <div className="text-gray-400 font-medium text-xs">
-                  {format(slotDate, 'yyyy')}
-                </div>
+                <div className="text-gray-400 font-medium text-xs">{format(slotDate, 'yyyy')}</div>
               )}
-              <div className="font-bold">
-                {format(slotDate, 'MMM')}
-              </div>
+              <div className="font-bold">{format(slotDate, 'MMM')}</div>
             </motion.div>
           );
         })}

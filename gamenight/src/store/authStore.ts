@@ -19,7 +19,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   checkAuth: async () => {
     try {
       set({ loading: true, error: null });
-      
+
       const response = await fetch(`${API_BASE}/auth/me`, {
         credentials: 'include',
       });
@@ -61,7 +61,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       action();
     } else {
       // Show auth prompt modal or redirect to login
-      if (confirm(message || 'This action requires you to sign in. Would you like to sign in now?')) {
+      if (
+        confirm(message || 'This action requires you to sign in. Would you like to sign in now?')
+      ) {
         get().redirectToLogin(window.location.href);
       }
     }

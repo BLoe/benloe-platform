@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import { authRoutes } from './routes/auth';
 import { userRoutes } from './routes/user';
 import { authenticate } from './middleware/auth';
+import { authService } from './services/auth';
 
 dotenv.config();
 
@@ -76,14 +77,43 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticate, userRoutes);
 
 // Frontend routes
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   const { token } = req.cookies;
+
   if (token) {
-    res.redirect('/dashboard');
-  } else {
-    const redirectUrl = req.query.redirect as string;
-    res.render('login', { redirectUrl });
+    try {
+      // Validate the token before redirecting
+      const decoded = await authService.verifyJWT(token);
+      const user = await authService.getUserById(decoded.userId);
+
+      if (user) {
+        // Token is valid, redirect to dashboard
+        return res.redirect('/dashboard');
+      } else {
+        // User not found, clear invalid token
+        res.clearCookie('token', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+          domain:
+            process.env.NODE_ENV === 'production' ? '.benloe.com' : undefined,
+        });
+      }
+    } catch (error) {
+      // Token is invalid, clear it
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+        domain:
+          process.env.NODE_ENV === 'production' ? '.benloe.com' : undefined,
+      });
+    }
   }
+
+  // No token or invalid token, show login page
+  const redirectUrl = req.query.redirect as string;
+  res.render('login', { redirectUrl });
 });
 
 app.get('/dashboard', authenticate, (req, res) => {

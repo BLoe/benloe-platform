@@ -11,7 +11,7 @@ module.exports = {
         PORT: 3001,
         JWT_SECRET: 'artanis-benloe-auth-jwt-2024-production-secure-key-v2',
         AUTH_SERVICE_URL: 'http://localhost:3002',
-        AUTH_DATABASE_URL: 'file:../../artanis/prisma/artanis.db'
+        AUTH_DATABASE_URL: 'file:../../artanis/prisma/artanis.db',
       },
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       error_file: './api/logs/err.log',
@@ -20,7 +20,7 @@ module.exports = {
       time: true,
       watch: false,
       max_memory_restart: '1G',
-      restart_delay: 4000
+      restart_delay: 4000,
     },
     {
       name: 'gamenight-frontend',
@@ -29,7 +29,7 @@ module.exports = {
         PM2_SERVE_PATH: '/var/apps/gamenight/dist',
         PM2_SERVE_PORT: 3000,
         PM2_SERVE_SPA: 'true',
-        PM2_SERVE_HOMEPAGE: '/index.html'
+        PM2_SERVE_HOMEPAGE: '/index.html',
       },
       instances: 1,
       exec_mode: 'fork',
@@ -39,7 +39,7 @@ module.exports = {
       log_file: './logs/frontend-combined.log',
       time: true,
       watch: false,
-      max_memory_restart: '500M'
-    }
-  ]
+      max_memory_restart: '500M',
+    },
+  ],
 };

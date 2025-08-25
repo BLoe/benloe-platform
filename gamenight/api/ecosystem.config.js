@@ -13,7 +13,7 @@ module.exports = {
         AUTH_SERVICE_URL: 'http://localhost:3002',
         AUTH_DATABASE_URL: 'file:../../../artanis/prisma/artanis.db',
         RATE_LIMIT_WINDOW_MS: '900000',
-        RATE_LIMIT_MAX_REQUESTS: '100'
+        RATE_LIMIT_MAX_REQUESTS: '100',
       },
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       error_file: './logs/err.log',
@@ -22,7 +22,7 @@ module.exports = {
       time: true,
       watch: false,
       max_memory_restart: '1G',
-      restart_delay: 4000
-    }
-  ]
+      restart_delay: 4000,
+    },
+  ],
 };

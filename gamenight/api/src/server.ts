@@ -78,22 +78,12 @@ app.get('/api', (_req, res) => {
 });
 
 // Error handling
-app.use(
-  (
-    err: Error,
-    _req: express.Request,
-    res: express.Response,
-    _next: express.NextFunction
-  ) => {
-    console.error('Error:', err);
-    res.status(500).json({
-      error:
-        process.env['NODE_ENV'] === 'production'
-          ? 'Internal server error'
-          : err.message,
-    });
-  }
-);
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Error:', err);
+  res.status(500).json({
+    error: process.env['NODE_ENV'] === 'production' ? 'Internal server error' : err.message,
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`🎲 Game Night API running on port ${PORT}`);

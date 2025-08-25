@@ -30,7 +30,7 @@ export class AuthClient {
       const response = await fetch(`${this.authServiceUrl}/api/auth/me`, {
         method: 'GET',
         headers: {
-          'Cookie': `token=${process.env['INTERNAL_AUTH_TOKEN'] || ''}`,
+          Cookie: `token=${process.env['INTERNAL_AUTH_TOKEN'] || ''}`,
         },
       });
 
@@ -38,7 +38,7 @@ export class AuthClient {
         return null;
       }
 
-      const data = await response.json() as { user: AuthUser };
+      const data = (await response.json()) as { user: AuthUser };
       return data.user;
     } catch {
       return null;

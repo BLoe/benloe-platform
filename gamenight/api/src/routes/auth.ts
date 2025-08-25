@@ -26,7 +26,7 @@ router.post('/logout', (_req, res) => {
     sameSite: process.env['NODE_ENV'] === 'production' ? 'strict' : 'lax',
     domain: process.env['NODE_ENV'] === 'production' ? '.benloe.com' : undefined,
   });
-  
+
   res.json({ message: 'Logged out successfully' });
 });
 

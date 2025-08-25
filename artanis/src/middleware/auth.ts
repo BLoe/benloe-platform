@@ -27,24 +27,49 @@ export async function authenticate(
     const token = req.cookies.token;
 
     if (!token) {
-      res.status(401).json({ error: 'Authentication required' });
-      return;
+      return handleAuthFailure(req, res, 'Authentication required');
     }
 
     const decoded = await authService.verifyJWT(token);
     const user = await authService.getUserById(decoded.userId);
 
     if (!user) {
-      res.status(401).json({ error: 'User not found' });
-      return;
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+        domain:
+          process.env.NODE_ENV === 'production' ? '.benloe.com' : undefined,
+      });
+      return handleAuthFailure(req, res, 'User not found');
     }
 
     req.user = user;
     next();
   } catch {
-    res.clearCookie('token');
-    res.status(401).json({ error: 'Invalid or expired token' });
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      domain: process.env.NODE_ENV === 'production' ? '.benloe.com' : undefined,
+    });
+    return handleAuthFailure(req, res, 'Invalid or expired token');
   }
+}
+
+function handleAuthFailure(req: Request, res: Response, error: string): void {
+  // Check if this is an API request
+  if (
+    req.path.startsWith('/api/') ||
+    req.headers.accept?.includes('application/json')
+  ) {
+    res.status(401).json({ error });
+    return;
+  }
+
+  // For page requests, redirect to login with the current path as redirect
+  const redirectUrl = encodeURIComponent(req.originalUrl);
+  res.redirect(`/?redirect=${redirectUrl}`);
 }
 
 export function optionalAuth(req: Request, res: Response, next: NextFunction) {
@@ -64,7 +89,13 @@ export function optionalAuth(req: Request, res: Response, next: NextFunction) {
       next();
     })
     .catch(() => {
-      res.clearCookie('token');
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+        domain:
+          process.env.NODE_ENV === 'production' ? '.benloe.com' : undefined,
+      });
       next();
     });
 }

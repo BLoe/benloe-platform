@@ -127,10 +127,15 @@ export async function sendMagicLink(
   };
 
   try {
-    console.log(`Attempting to send magic link to ${email} using domain: ${process.env.MAILGUN_DOMAIN}`);
-    
-    const result = await mg.messages.create(process.env.MAILGUN_DOMAIN || 'mail.benloe.com', mailOptions);
-    
+    console.log(
+      `Attempting to send magic link to ${email} using domain: ${process.env.MAILGUN_DOMAIN}`
+    );
+
+    const result = await mg.messages.create(
+      process.env.MAILGUN_DOMAIN || 'mail.benloe.com',
+      mailOptions
+    );
+
     console.log(`Magic link sent successfully to ${email}`, result);
     return true;
   } catch (error) {

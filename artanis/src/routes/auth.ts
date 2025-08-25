@@ -7,7 +7,7 @@ const router = Router();
 
 const magicLinkSchema = z.object({
   email: z.string().email('Valid email is required'),
-  redirectUrl: z.string().url().optional(),
+  redirectUrl: z.string().optional(),
 });
 
 const verifyTokenSchema = z.object({
@@ -17,6 +17,7 @@ const verifyTokenSchema = z.object({
 // Send magic link
 router.post('/magic-link', async (req, res) => {
   try {
+    console.log('Magic link request body:', req.body);
     const { email, redirectUrl } = magicLinkSchema.parse(req.body);
 
     await authService.sendMagicLink(email, redirectUrl);
@@ -98,11 +99,22 @@ router.post('/logout', async (req, res) => {
       }
     }
 
-    res.clearCookie('token');
+    // Clear cookie with same options as when it was set
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      domain: process.env.NODE_ENV === 'production' ? '.benloe.com' : undefined,
+    });
     return res.json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error('Logout error:', error);
-    res.clearCookie('token');
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      domain: process.env.NODE_ENV === 'production' ? '.benloe.com' : undefined,
+    });
     return res.status(500).json({ error: 'Logout failed' });
   }
 });
@@ -120,7 +132,13 @@ router.get('/me', async (req, res) => {
     const user = await authService.getUserById(decoded.userId);
 
     if (!user) {
-      res.clearCookie('token');
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+        domain:
+          process.env.NODE_ENV === 'production' ? '.benloe.com' : undefined,
+      });
       return res.status(401).json({ error: 'User not found' });
     }
 
@@ -134,7 +152,12 @@ router.get('/me', async (req, res) => {
       },
     });
   } catch {
-    res.clearCookie('token');
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      domain: process.env.NODE_ENV === 'production' ? '.benloe.com' : undefined,
+    });
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 });

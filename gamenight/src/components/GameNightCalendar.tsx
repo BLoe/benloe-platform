@@ -1,6 +1,14 @@
 import { useState, useCallback } from 'react';
 import { CalendarDaysIcon, UsersIcon, ClockIcon } from '@heroicons/react/24/outline';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, isToday } from 'date-fns';
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameDay,
+  isSameMonth,
+  isToday,
+} from 'date-fns';
 import { useRequireAuth } from '../hooks/useRequireAuth';
 import MonthCarousel from './MonthCarousel';
 import clsx from 'clsx';
@@ -51,48 +59,52 @@ export default function GameNightCalendar() {
   const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   const getEventsForDay = (day: Date) => {
-    return mockEvents.filter(event => 
-      isSameDay(new Date(event.dateTime), day)
-    );
+    return mockEvents.filter((event) => isSameDay(new Date(event.dateTime), day));
   };
 
   // Get events organized by date for mobile view
   const getEventsGroupedByDate = () => {
     const grouped: { [key: string]: typeof mockEvents } = {};
     const currentMonth = format(currentDate, 'yyyy-MM');
-    
+
     mockEvents
-      .filter(event => format(new Date(event.dateTime), 'yyyy-MM') === currentMonth)
-      .forEach(event => {
+      .filter((event) => format(new Date(event.dateTime), 'yyyy-MM') === currentMonth)
+      .forEach((event) => {
         const dateKey = format(new Date(event.dateTime), 'yyyy-MM-dd');
         if (!grouped[dateKey]) {
           grouped[dateKey] = [];
         }
         grouped[dateKey].push(event);
       });
-    
+
     return Object.keys(grouped)
       .sort()
-      .map(dateKey => ({
+      .map((dateKey) => ({
         date: new Date(dateKey),
-        events: grouped[dateKey] || []
+        events: grouped[dateKey] || [],
       }));
   };
 
   const handleScheduleGameNight = () => {
-    withAuth(() => {
-      alert('Opening game night scheduler...');
-    }, {
-      message: 'You need to sign in to schedule a game night. Would you like to sign in now?'
-    });
+    withAuth(
+      () => {
+        alert('Opening game night scheduler...');
+      },
+      {
+        message: 'You need to sign in to schedule a game night. Would you like to sign in now?',
+      }
+    );
   };
 
   const handleJoinEvent = (eventId: string) => {
-    withAuth(() => {
-      alert(`Joining event ${eventId}...`);
-    }, {
-      message: 'You need to sign in to join a game night. Would you like to sign in now?'
-    });
+    withAuth(
+      () => {
+        alert(`Joining event ${eventId}...`);
+      },
+      {
+        message: 'You need to sign in to join a game night. Would you like to sign in now?',
+      }
+    );
   };
 
   return (
@@ -114,20 +126,20 @@ export default function GameNightCalendar() {
       </div>
 
       {/* Month Navigation */}
-      <MonthCarousel 
-        onMonthChange={handleMonthChange}
-        onTodayClick={handleTodayClick}
-      />
+      <MonthCarousel onMonthChange={handleMonthChange} onTodayClick={handleTodayClick} />
 
       {/* Desktop Calendar Grid */}
       <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
         <div className="grid grid-cols-7 gap-px bg-gray-200">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <div key={day} className="bg-gray-50 py-2 px-3 text-center text-xs font-semibold text-gray-700">
+            <div
+              key={day}
+              className="bg-gray-50 py-2 px-3 text-center text-xs font-semibold text-gray-700"
+            >
               {day}
             </div>
           ))}
-          
+
           {calendarDays.map((day) => {
             const dayEvents = getEventsForDay(day);
             const isCurrentMonth = isSameMonth(day, currentDate);
@@ -141,13 +153,10 @@ export default function GameNightCalendar() {
                   !isCurrentMonth && 'bg-gray-50 text-gray-400'
                 )}
               >
-                <div className={clsx(
-                  'text-sm font-medium mb-1',
-                  isDayToday && 'text-indigo-600'
-                )}>
+                <div className={clsx('text-sm font-medium mb-1', isDayToday && 'text-indigo-600')}>
                   {format(day, 'd')}
                 </div>
-                
+
                 {dayEvents.map((event) => (
                   <div
                     key={event.id}
@@ -174,9 +183,7 @@ export default function GameNightCalendar() {
           <div key={date.toISOString()} className="bg-white rounded-lg shadow overflow-hidden">
             <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900">
-                  {format(date, 'EEEE, MMM d')}
-                </h3>
+                <h3 className="text-lg font-medium text-gray-900">{format(date, 'EEEE, MMM d')}</h3>
                 {isToday(date) && (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                     Today
@@ -206,9 +213,7 @@ export default function GameNightCalendar() {
                           {event.commitments.length}/{event.game.maxPlayers}
                         </div>
                       </div>
-                      <p className="mt-1 text-sm text-gray-600">
-                        Hosted by {event.creator.name}
-                      </p>
+                      <p className="mt-1 text-sm text-gray-600">Hosted by {event.creator.name}</p>
                     </div>
                     <div className="ml-4 flex flex-col items-end space-y-2">
                       <button
@@ -220,11 +225,13 @@ export default function GameNightCalendar() {
                       >
                         Join
                       </button>
-                      <span className={clsx(
-                        'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-                        event.status === 'OPEN' && 'bg-green-100 text-green-800',
-                        event.status === 'FULL' && 'bg-red-100 text-red-800'
-                      )}>
+                      <span
+                        className={clsx(
+                          'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                          event.status === 'OPEN' && 'bg-green-100 text-green-800',
+                          event.status === 'FULL' && 'bg-red-100 text-red-800'
+                        )}
+                      >
                         {event.status}
                       </span>
                     </div>
@@ -234,7 +241,7 @@ export default function GameNightCalendar() {
             </div>
           </div>
         ))}
-        
+
         {getEventsGroupedByDate().length === 0 && (
           <div className="bg-white rounded-lg shadow p-8 text-center">
             <CalendarDaysIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -259,7 +266,10 @@ export default function GameNightCalendar() {
         <h3 className="text-lg font-medium text-gray-900 mb-4">Upcoming Game Nights</h3>
         <div className="space-y-4">
           {mockEvents.map((event) => (
-            <div key={event.id} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+            <div
+              key={event.id}
+              className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h4 className="text-lg font-medium text-gray-900">
@@ -279,9 +289,7 @@ export default function GameNightCalendar() {
                       {event.commitments.length}/{event.game.maxPlayers} players
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-gray-600">
-                    Hosted by {event.creator.name}
-                  </p>
+                  <p className="mt-2 text-sm text-gray-600">Hosted by {event.creator.name}</p>
                 </div>
                 <div className="ml-6 flex flex-col space-y-2">
                   <button
@@ -290,11 +298,13 @@ export default function GameNightCalendar() {
                   >
                     Join Game
                   </button>
-                  <span className={clsx(
-                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                    event.status === 'OPEN' && 'bg-green-100 text-green-800',
-                    event.status === 'FULL' && 'bg-red-100 text-red-800'
-                  )}>
+                  <span
+                    className={clsx(
+                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                      event.status === 'OPEN' && 'bg-green-100 text-green-800',
+                      event.status === 'FULL' && 'bg-red-100 text-red-800'
+                    )}
+                  >
                     {event.status}
                   </span>
                 </div>
