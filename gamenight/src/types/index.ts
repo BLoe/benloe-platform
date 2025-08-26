@@ -21,7 +21,7 @@ export interface Game {
   bestWith?: string;
 }
 
-export interface GameEvent {
+export interface Event {
   id: string;
   title?: string;
   dateTime: string;
@@ -29,17 +29,27 @@ export interface GameEvent {
   description?: string;
   status: 'OPEN' | 'FULL' | 'CANCELLED' | 'COMPLETED';
   game: Game;
-  creator: User;
+  gameId: string;
+  creatorId: string;
   commitments: Commitment[];
   commitmentDeadline?: string;
+  committedCount?: number;
+  waitlistedCount?: number;
+  spotsAvailable?: number;
+  isFull?: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
+
+// Keep the old name as alias for backward compatibility
+export type GameEvent = Event;
 
 export interface Commitment {
   id: string;
   status: 'COMMITTED' | 'WAITLISTED' | 'DECLINED';
   joinedAt: string;
   notes?: string;
-  user: User;
+  userId: string;
 }
 
 export interface AuthState {

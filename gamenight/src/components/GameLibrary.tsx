@@ -1,78 +1,52 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, UsersIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useRequireAuth } from '../hooks/useRequireAuth';
+import { useGameStore } from '../store/gameStore';
+import CreateEventDialog from './CreateEventDialog';
+import BGGSearchDialog from './BGGSearchDialog';
 import clsx from 'clsx';
-
-// Mock game data
-const mockGames = [
-  {
-    id: '1',
-    name: 'Settlers of Catan',
-    minPlayers: 3,
-    maxPlayers: 4,
-    duration: 90,
-    complexity: 2.3,
-    imageUrl: 'https://via.placeholder.com/200x300?text=Catan',
-    description: 'A strategic board game about building settlements and trading resources.',
-    bestWith: '3-4 players',
-  },
-  {
-    id: '2',
-    name: 'Wingspan',
-    minPlayers: 1,
-    maxPlayers: 5,
-    duration: 70,
-    complexity: 2.4,
-    imageUrl: 'https://via.placeholder.com/200x300?text=Wingspan',
-    description: 'A competitive bird-collection, engine-building game.',
-    bestWith: '2-4 players',
-  },
-  {
-    id: '3',
-    name: 'Azul',
-    minPlayers: 2,
-    maxPlayers: 4,
-    duration: 45,
-    complexity: 1.8,
-    imageUrl: 'https://via.placeholder.com/200x300?text=Azul',
-    description: 'A tile-placement game about decorating the walls of the Royal Palace.',
-    bestWith: '2-3 players',
-  },
-  {
-    id: '4',
-    name: 'Ticket to Ride',
-    minPlayers: 2,
-    maxPlayers: 5,
-    duration: 60,
-    complexity: 1.8,
-    imageUrl: 'https://via.placeholder.com/200x300?text=Ticket',
-    description: 'A railway-themed board game about connecting cities across the country.',
-    bestWith: '3-4 players',
-  },
-];
 
 export default function GameLibrary() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedComplexity, setSelectedComplexity] = useState<number | null>(null);
-  const [selectedPlayerCount, setSelectedPlayerCount] = useState<number | null>(null);
+  const [isCreateEventDialogOpen, setIsCreateEventDialogOpen] = useState(false);
+  const [selectedGameId, setSelectedGameId] = useState<string | undefined>(undefined);
+  const [isBGGSearchDialogOpen, setIsBGGSearchDialogOpen] = useState(false);
   const { withAuth } = useRequireAuth();
 
-  const filteredGames = mockGames.filter((game) => {
-    const matchesSearch = game.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesComplexity =
-      selectedComplexity === null ||
-      (game.complexity && Math.floor(game.complexity) === selectedComplexity);
-    const matchesPlayerCount =
-      selectedPlayerCount === null ||
-      (selectedPlayerCount >= game.minPlayers && selectedPlayerCount <= game.maxPlayers);
+  const {
+    games,
+    loading,
+    error,
+    fetchGames,
+    searchGames,
+    setPlayerCountFilter,
+    setComplexityFilter,
+    playerCountFilter,
+    complexityFilter,
+  } = useGameStore();
 
-    return matchesSearch && matchesComplexity && matchesPlayerCount;
-  });
+  // Load games on component mount
+  useEffect(() => {
+    fetchGames();
+  }, [fetchGames]);
+
+  // Handle search with debouncing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchTerm.trim()) {
+        searchGames(searchTerm);
+      } else {
+        fetchGames();
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, searchGames, fetchGames]);
 
   const handleAddGame = () => {
     withAuth(
       () => {
-        alert('Opening add game form...');
+        setIsBGGSearchDialogOpen(true);
       },
       {
         message: 'You need to sign in to add games to the library. Would you like to sign in now?',
@@ -80,15 +54,27 @@ export default function GameLibrary() {
     );
   };
 
-  const handleScheduleWithGame = (_gameId: string, gameName: string) => {
+  const handleCloseBGGSearchDialog = () => {
+    setIsBGGSearchDialogOpen(false);
+    // Refresh games list after potential imports
+    fetchGames();
+  };
+
+  const handleScheduleWithGame = (gameId: string, _gameName: string) => {
     withAuth(
       () => {
-        alert(`Scheduling game night with ${gameName}...`);
+        setSelectedGameId(gameId);
+        setIsCreateEventDialogOpen(true);
       },
       {
         message: 'You need to sign in to schedule a game night. Would you like to sign in now?',
       }
     );
+  };
+
+  const handleCloseCreateEventDialog = () => {
+    setIsCreateEventDialogOpen(false);
+    setSelectedGameId(undefined);
   };
 
   const getComplexityLabel = (complexity: number) => {
@@ -152,10 +138,8 @@ export default function GameLibrary() {
             </label>
             <select
               id="complexity"
-              value={selectedComplexity || ''}
-              onChange={(e) =>
-                setSelectedComplexity(e.target.value ? Number(e.target.value) : null)
-              }
+              value={complexityFilter || ''}
+              onChange={(e) => setComplexityFilter(e.target.value ? Number(e.target.value) : null)}
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
               <option value="">All Complexities</option>
@@ -173,10 +157,8 @@ export default function GameLibrary() {
             </label>
             <select
               id="players"
-              value={selectedPlayerCount || ''}
-              onChange={(e) =>
-                setSelectedPlayerCount(e.target.value ? Number(e.target.value) : null)
-              }
+              value={playerCountFilter || ''}
+              onChange={(e) => setPlayerCountFilter(e.target.value ? Number(e.target.value) : null)}
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
               <option value="">Any Player Count</option>
@@ -189,9 +171,21 @@ export default function GameLibrary() {
         </div>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+          {error}
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        </div>
+      )}
+
       {/* Games Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredGames.map((game) => (
+        {games.map((game) => (
           <div
             key={game.id}
             className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
@@ -252,7 +246,7 @@ export default function GameLibrary() {
         ))}
       </div>
 
-      {filteredGames.length === 0 && (
+      {!loading && games.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">No games found matching your criteria.</p>
           <button
@@ -264,6 +258,16 @@ export default function GameLibrary() {
           </button>
         </div>
       )}
+
+      {/* Create Event Dialog */}
+      <CreateEventDialog
+        isOpen={isCreateEventDialogOpen}
+        onClose={handleCloseCreateEventDialog}
+        {...(selectedGameId && { initialGameId: selectedGameId })}
+      />
+
+      {/* BGG Search Dialog */}
+      <BGGSearchDialog isOpen={isBGGSearchDialogOpen} onClose={handleCloseBGGSearchDialog} />
     </div>
   );
 }

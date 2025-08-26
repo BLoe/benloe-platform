@@ -9,6 +9,10 @@ import cookieParser from 'cookie-parser';
 
 import { authRoutes } from './routes/auth';
 import { healthRoutes } from './routes/health';
+import { gameRoutes } from './routes/games-production';
+import { eventRoutes } from './routes/events-production';
+import { calendarRoutes } from './routes/calendar';
+import './services/databaseService'; // Initialize database
 
 const app = express();
 const PORT = process.env['PORT'] || 3001;
@@ -66,6 +70,9 @@ app.use(cookieParser());
 // API Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/games', gameRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/calendar', calendarRoutes);
 
 // Default route
 app.get('/api', (_req, res) => {

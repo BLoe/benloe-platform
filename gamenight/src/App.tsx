@@ -4,6 +4,7 @@ import { useAuthStore } from './store/authStore';
 import Navigation from './components/Navigation';
 import GameNightCalendar from './components/GameNightCalendar';
 import GameLibrary from './components/GameLibrary';
+import ProfileSettings from './components/ProfileSettings';
 
 function App() {
   const { checkAuth, loading } = useAuthStore();
@@ -31,6 +32,7 @@ function App() {
           <Routes>
             <Route path="/" element={<GameNightCalendar />} />
             <Route path="/games" element={<GameLibrary />} />
+            <Route path="/profile" element={<ProfileSettings />} />
           </Routes>
         </main>
       </div>

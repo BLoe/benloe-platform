@@ -23,7 +23,7 @@ export class AuthClient {
     }
   }
 
-  async getUserFromAuth(_userId: string): Promise<AuthUser | null> {
+  async getUserFromAuth(): Promise<AuthUser | null> {
     try {
       // In production, this would make an HTTP request to the auth service
       // For now, we'll make a direct call to the auth service API
@@ -45,13 +45,24 @@ export class AuthClient {
     }
   }
 
-  async validateUserById(_userId: string): Promise<AuthUser | null> {
+  async validateUserById(userId: string): Promise<AuthUser | null> {
     try {
-      // Direct database call would be better for internal service communication
-      // For now, we'll simulate the validation
-      // In a real implementation, we'd have access to the same database or make service calls
-      return null; // Will implement proper user validation
-    } catch {
+      // Make direct call to auth service to validate user
+      const response = await fetch(`${this.authServiceUrl}/api/auth/user/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${process.env['INTERNAL_AUTH_TOKEN'] || ''}`,
+        },
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = (await response.json()) as { user: AuthUser };
+      return data.user;
+    } catch (error) {
+      console.error('Failed to validate user:', error);
       return null;
     }
   }

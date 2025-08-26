@@ -9,7 +9,8 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
-        JWT_SECRET: process.env.JWT_SECRET || 'artanis-benloe-auth-jwt-2024-production-secure-key-v2',
+        JWT_SECRET:
+          process.env.JWT_SECRET || 'artanis-benloe-auth-jwt-2024-production-secure-key-v2',
         AUTH_SERVICE_URL: 'http://localhost:3002',
         AUTH_DATABASE_URL: 'file:../../../artanis/prisma/artanis.db',
         RATE_LIMIT_WINDOW_MS: '900000',

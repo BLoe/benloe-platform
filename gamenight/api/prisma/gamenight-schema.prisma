@@ -1,12 +1,12 @@
 // Game Night Application Schema
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
+  output   = "../node_modules/.prisma/gamenight-client"
 }
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = env("GAMENIGHT_DATABASE_URL")
 }
 
 // Game library with BGG integration

@@ -1,5 +1,10 @@
-import { useState, useCallback } from 'react';
-import { CalendarDaysIcon, UsersIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { useState, useCallback, useEffect } from 'react';
+import {
+  CalendarDaysIcon,
+  UsersIcon,
+  ClockIcon,
+  ArrowDownTrayIcon,
+} from '@heroicons/react/24/outline';
 import {
   format,
   startOfMonth,
@@ -10,41 +15,24 @@ import {
   isToday,
 } from 'date-fns';
 import { useRequireAuth } from '../hooks/useRequireAuth';
+import { useEventStore } from '../store/eventStore';
 import MonthCarousel from './MonthCarousel';
+import CreateEventDialog from './CreateEventDialog';
+import CalendarExport from './CalendarExport';
 import clsx from 'clsx';
-
-// Mock data for demonstration
-const mockEvents = [
-  {
-    id: '1',
-    title: 'Settlers of Catan Night',
-    dateTime: '2025-08-25T19:00:00',
-    game: { name: 'Settlers of Catan', minPlayers: 3, maxPlayers: 4 },
-    creator: { name: 'John Doe' },
-    commitments: [
-      { user: { name: 'John Doe' }, status: 'COMMITTED' },
-      { user: { name: 'Jane Smith' }, status: 'COMMITTED' },
-    ],
-    status: 'OPEN',
-  },
-  {
-    id: '2',
-    title: 'Wingspan Tournament',
-    dateTime: '2025-08-27T18:30:00',
-    game: { name: 'Wingspan', minPlayers: 2, maxPlayers: 5 },
-    creator: { name: 'Alice Johnson' },
-    commitments: [
-      { user: { name: 'Alice Johnson' }, status: 'COMMITTED' },
-      { user: { name: 'Bob Wilson' }, status: 'COMMITTED' },
-      { user: { name: 'Carol Davis' }, status: 'COMMITTED' },
-    ],
-    status: 'OPEN',
-  },
-];
 
 export default function GameNightCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isCreateEventDialogOpen, setIsCreateEventDialogOpen] = useState(false);
+  const [isCalendarExportOpen, setIsCalendarExportOpen] = useState(false);
   const { withAuth } = useRequireAuth();
+
+  const { events, loading, error, fetchEventsForMonth, joinEvent } = useEventStore();
+
+  // Load events for current month on mount
+  useEffect(() => {
+    fetchEventsForMonth(currentDate);
+  }, [currentDate, fetchEventsForMonth]);
 
   const handleTodayClick = useCallback(() => {
     setCurrentDate(new Date());
@@ -59,15 +47,15 @@ export default function GameNightCalendar() {
   const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   const getEventsForDay = (day: Date) => {
-    return mockEvents.filter((event) => isSameDay(new Date(event.dateTime), day));
+    return events.filter((event) => isSameDay(new Date(event.dateTime), day));
   };
 
   // Get events organized by date for mobile view
   const getEventsGroupedByDate = () => {
-    const grouped: { [key: string]: typeof mockEvents } = {};
+    const grouped: { [key: string]: typeof events } = {};
     const currentMonth = format(currentDate, 'yyyy-MM');
 
-    mockEvents
+    events
       .filter((event) => format(new Date(event.dateTime), 'yyyy-MM') === currentMonth)
       .forEach((event) => {
         const dateKey = format(new Date(event.dateTime), 'yyyy-MM-dd');
@@ -88,7 +76,7 @@ export default function GameNightCalendar() {
   const handleScheduleGameNight = () => {
     withAuth(
       () => {
-        alert('Opening game night scheduler...');
+        setIsCreateEventDialogOpen(true);
       },
       {
         message: 'You need to sign in to schedule a game night. Would you like to sign in now?',
@@ -96,10 +84,21 @@ export default function GameNightCalendar() {
     );
   };
 
+  const handleCloseCreateEventDialog = () => {
+    setIsCreateEventDialogOpen(false);
+    // Refresh events after creation
+    fetchEventsForMonth(currentDate);
+  };
+
   const handleJoinEvent = (eventId: string) => {
     withAuth(
-      () => {
-        alert(`Joining event ${eventId}...`);
+      async () => {
+        try {
+          await joinEvent(eventId);
+          // Success handled by store
+        } catch (error) {
+          console.error('Failed to join event:', error);
+        }
       },
       {
         message: 'You need to sign in to join a game night. Would you like to sign in now?',
@@ -115,7 +114,14 @@ export default function GameNightCalendar() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Game Night Calendar</h1>
           <p className="text-gray-600 mt-2">Schedule and join board game nights with friends</p>
         </div>
-        <div className="ml-4 flex-shrink-0">
+        <div className="ml-4 flex-shrink-0 space-x-3">
+          <button
+            onClick={() => setIsCalendarExportOpen(true)}
+            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+            Export
+          </button>
           <button
             onClick={handleScheduleGameNight}
             className="inline-flex items-center px-3 py-2 sm:px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -127,6 +133,18 @@ export default function GameNightCalendar() {
 
       {/* Month Navigation */}
       <MonthCarousel onMonthChange={handleMonthChange} onTodayClick={handleTodayClick} />
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+          {error}
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        </div>
+      )}
 
       {/* Desktop Calendar Grid */}
       <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
@@ -210,10 +228,10 @@ export default function GameNightCalendar() {
                         </div>
                         <div className="flex items-center">
                           <UsersIcon className="h-4 w-4 mr-1" />
-                          {event.commitments.length}/{event.game.maxPlayers}
+                          {event.committedCount || event.commitments.length}/{event.game.maxPlayers}
                         </div>
                       </div>
-                      <p className="mt-1 text-sm text-gray-600">Hosted by {event.creator.name}</p>
+                      <p className="mt-1 text-sm text-gray-600">Hosted by {event.creatorId}</p>
                     </div>
                     <div className="ml-4 flex flex-col items-end space-y-2">
                       <button
@@ -261,58 +279,14 @@ export default function GameNightCalendar() {
         )}
       </div>
 
-      {/* Upcoming Events List */}
-      <div className="mt-8">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Upcoming Game Nights</h3>
-        <div className="space-y-4">
-          {mockEvents.map((event) => (
-            <div
-              key={event.id}
-              className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h4 className="text-lg font-medium text-gray-900">
-                    {event.title || event.game.name}
-                  </h4>
-                  <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <CalendarDaysIcon className="h-4 w-4 mr-1" />
-                      {format(new Date(event.dateTime), 'MMM d, yyyy')}
-                    </div>
-                    <div className="flex items-center">
-                      <ClockIcon className="h-4 w-4 mr-1" />
-                      {format(new Date(event.dateTime), 'h:mm a')}
-                    </div>
-                    <div className="flex items-center">
-                      <UsersIcon className="h-4 w-4 mr-1" />
-                      {event.commitments.length}/{event.game.maxPlayers} players
-                    </div>
-                  </div>
-                  <p className="mt-2 text-sm text-gray-600">Hosted by {event.creator.name}</p>
-                </div>
-                <div className="ml-6 flex flex-col space-y-2">
-                  <button
-                    onClick={() => handleJoinEvent(event.id)}
-                    className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Join Game
-                  </button>
-                  <span
-                    className={clsx(
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                      event.status === 'OPEN' && 'bg-green-100 text-green-800',
-                      event.status === 'FULL' && 'bg-red-100 text-red-800'
-                    )}
-                  >
-                    {event.status}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Create Event Dialog */}
+      <CreateEventDialog isOpen={isCreateEventDialogOpen} onClose={handleCloseCreateEventDialog} />
+
+      {/* Calendar Export Dialog */}
+      <CalendarExport
+        isOpen={isCalendarExportOpen}
+        onClose={() => setIsCalendarExportOpen(false)}
+      />
     </div>
   );
 }
