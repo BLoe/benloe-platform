@@ -1,4 +1,8 @@
 import { eventService } from './database';
+import { Event } from './database';
+import { format } from 'date-fns';
+import crypto from 'crypto';
+import { db } from './database';
 
 export interface CalendarSubscription {
   id: string;
@@ -163,7 +167,7 @@ class CalendarService {
 
   // Generate a subscription token for a user
   generateSubscriptionToken(userId: string): string {
-    const crypto = require('crypto');
+    // crypto imported at top
     
     // Create a secure token for calendar subscriptions
     const timestamp = Date.now().toString(36);
@@ -199,7 +203,7 @@ class CalendarService {
   }
 
   private storeSubscriptionToken(userId: string, token: string): void {
-    const { db } = require('./database');
+    // db imported at top
     const id = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -214,7 +218,7 @@ class CalendarService {
   }
 
   private getSubscriptionByToken(token: string): { userId: string; active: boolean } | null {
-    const { db } = require('./database');
+    // db imported at top
     return db.prepare('SELECT userId, active FROM calendar_subscriptions WHERE token = ?').get(token) as { userId: string; active: boolean } | null;
   }
 }

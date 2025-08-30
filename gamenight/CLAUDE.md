@@ -1,214 +1,286 @@
-# Game Night Scheduler - AI-Assisted Development Plan
+# Game Night Scheduler - Production Documentation
 
-## Project Context
+## Overview
 
-Building a board game scheduling app using AI code generation to solve the commitment problem in game nights. Focus on architectural dependencies and technical build order for optimal AI-assisted development workflow.
+The Game Night Scheduler is a web application that solves the commitment problem in board game scheduling. Instead of open invites that lead to wrong group sizes, it enables commitment-based scheduling where players commit to specific game/date combinations with enforced player limits.
+
+**Live App**: https://gamenight.benloe.com  
+**Status**: Production Ready ✅  
+**Last Updated**: August 2025
 
 ## Core Problem & Solution
 
-**Problem**: Board games require specific player counts, but traditional "open invites" lead to wrong group sizes
-**Solution**: Commitment-based scheduling where players commit to specific game/date combinations with enforced player limits
+**Problem**: Board games require specific player counts (2-4, 3-6, etc.), but traditional "open invites" result in too many or too few players showing up.
 
-## Technical Architecture
+**Solution**: 
+- Players commit to specific events with known games
+- Events automatically close when max players reached
+- Waitlist system handles overflow
+- Clear visibility into who's actually coming
 
-### Stack Decision: Modern Web App
+## Architecture Overview
 
-- **Frontend**: React with TypeScript for type safety and component reusability
-- **Backend**: Node.js + Express with TypeScript
-- **Database**: SQLite with Prisma ORM for schema management and type generation
-- **Styling**: Tailwind CSS + Headless UI components
-- **Build**: Vite for fast development
-- **Deployment**: PM2 on /var/apps/gamenight.benloe.com
+### Technology Stack
 
-**Rationale**: AI tools work best with TypeScript for code generation, Prisma generates types from schema, modern React patterns are well-represented in training data.
+**Frontend**:
+- React 18 with TypeScript for type safety
+- Tailwind CSS + Headless UI for modern, responsive design  
+- Zustand for lightweight state management
+- Vite for fast builds and development
 
-### Database Schema
+**Backend**:
+- Node.js + Express with TypeScript
+- Prisma ORM with SQLite database
+- JWT authentication (integrated with Artanis auth service)
+- Rate limiting and security middleware
 
-```prisma
-model User {
-  id          String   @id @default(cuid())
-  name        String
-  email       String?  @unique
-  createdAt   DateTime @default(now())
+**Infrastructure**:
+- Deployed on VPS at `/var/apps/gamenight/`
+- PM2 process management
+- Caddy reverse proxy with automatic HTTPS
+- SQLite for simple, reliable data storage
 
-  createdEvents Event[] @relation("EventCreator")
-  commitments   Commitment[]
-}
-
-model Game {
-  id          String @id @default(cuid())
-  name        String
-  minPlayers  Int
-  maxPlayers  Int
-  duration    Int?   // minutes
-  complexity  Float? // 1-5 BGG weight
-  bggId       Int?   @unique
-  imageUrl    String?
-
-  events Event[]
-}
-
-model Event {
-  id          String   @id @default(cuid())
-  title       String?
-  dateTime    DateTime
-  location    String?
-  description String?
-  status      EventStatus @default(OPEN)
-  createdAt   DateTime @default(now())
-
-  game        Game   @relation(fields: [gameId], references: [id])
-  gameId      String
-  creator     User   @relation("EventCreator", fields: [creatorId], references: [id])
-  creatorId   String
-
-  commitments Commitment[]
-}
-
-model Commitment {
-  id       String @id @default(cuid())
-  status   CommitmentStatus @default(COMMITTED)
-  joinedAt DateTime @default(now())
-
-  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  eventId String
-  user    User   @relation(fields: [userId], references: [id])
-  userId  String
-
-  @@unique([eventId, userId])
-}
-
-enum EventStatus {
-  OPEN
-  FULL
-  CANCELLED
-  COMPLETED
-}
-
-enum CommitmentStatus {
-  COMMITTED
-  WAITLISTED
-  DECLINED
-}
-```
-
-## Build Order Dependencies
-
-### Foundation Layer (No Dependencies)
-
-1. **Database Schema & Migrations**: Prisma schema, migrations, seed data
-2. **Type Definitions**: Generated Prisma types + custom app types
-3. **Basic API Routes**: CRUD operations for games, events, users
-
-### Data Layer (Requires Foundation)
-
-4. **Game Data Integration**: BoardGameGeek API client, game seeding
-5. **User Session Management**: Simple session-based auth (no OAuth complexity initially)
-6. **Event Logic**: Business rules for player count validation, commitment handling
-
-### API Layer (Requires Data Layer)
-
-7. **REST Endpoints**:
-   - `/api/events` - CRUD + join/leave actions
-   - `/api/games` - Search and game details
-   - `/api/users` - Profile management
-8. **Real-time Updates**: WebSocket connections for live commitment updates
-
-### Frontend Foundation (Can Start in Parallel)
-
-9. **Component System**: Base components (Button, Card, Modal) with Tailwind + HeadlessUI
-10. **State Management**: Zustand store for events, games, user state
-11. **API Client**: Axios/fetch wrapper with TypeScript interfaces
-
-### Core Features (Requires API + Frontend Foundation)
-
-12. **Event Feed**: List view with filtering, search, infinite scroll
-13. **Event Creation**: Multi-step form with game search, date picker
-14. **Event Details**: Join/leave actions, participant list, real-time updates
-15. **User Profile**: Created events, joined events, commitment history
-
-### Polish Layer (Requires Core Features)
-
-16. **Mobile Optimization**: Touch interactions, responsive layout
-17. **Error Handling**: Toast notifications, loading states, error boundaries
-18. **Performance**: Lazy loading, caching, optimistic updates
-
-## AI Code Generation Strategy
-
-### High-Value AI Tasks
-
-- **Prisma Schema Generation**: From requirements to complete schema
-- **API Route Boilerplate**: CRUD operations with proper error handling
-- **React Component Generation**: From mockups to TypeScript components
-- **Type Safety**: Generate types from API responses
-- **Form Validation**: Zod schemas for form validation
-- **Test Generation**: Unit tests for business logic
-
-### Domain-Specific Considerations
-
-- **Board Game Data**: Use BGG XML API for authoritative game data
-- **Date/Time Handling**: Account for timezone complexity in scheduling
-- **Concurrency**: Handle simultaneous commitment attempts
-- **Validation**: Enforce player count constraints at database level
-
-## Development Workflow for AI Assistance
-
-### Iterative Build Approach
-
-1. **Schema First**: Generate database schema, then build API to match
-2. **API First**: Create endpoints with mock data, then build frontend
-3. **Component Library**: Build reusable components before page assembly
-4. **Type-Driven**: Use TypeScript errors to guide AI completions
-
-### Code Generation Prompts Structure
-
-- Include full context of existing code structure
-- Specify exact TypeScript interfaces expected
-- Reference existing patterns in codebase
-- Include business rules and validation requirements
-
-## Technical Debt Prevention
-
-### AI-Assisted Refactoring Checkpoints
-
-- After database schema stabilizes: Generate comprehensive types
-- After API routes complete: Consolidate error handling patterns
-- After core components built: Extract common patterns to shared utilities
-- Before polish phase: Performance audit and optimization
-
-### Maintainability Patterns
-
-- Consistent file naming and folder structure
-- Centralized configuration management
-- Proper error boundaries and fallback states
-- Comprehensive TypeScript coverage
-
-## Deployment Architecture
+### Service Architecture
 
 ```
-/var/apps/gamenight.benloe.com/
-├── server/          # Express API
-├── client/          # React app (built to dist/)
-├── prisma/          # Database schema and migrations
-├── shared/          # Shared types and utilities
-└── package.json     # Monorepo with workspaces
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Client App    │    │   Game Night     │    │  Artanis Auth   │
+│  (React/Vite)   │────│   API Server     │────│   Service       │
+│  Port 3000      │    │  (Express/Node)  │    │   Port 3002     │
+└─────────────────┘    │   Port 3001      │    └─────────────────┘
+                       └──────────────────┘
+                                │
+                       ┌──────────────────┐
+                       │   SQLite DB      │
+                       │  gamenight.db    │
+                       └──────────────────┘
 ```
+
+### Request Flow
+
+1. **Client** → Caddy (HTTPS termination)
+2. **Caddy** → Routes `/api/*` to Game Night API (3001)
+3. **Caddy** → Routes `/*` to React app (3000)
+4. **API** → Validates JWT with Artanis service
+5. **API** → Queries SQLite database
+6. **API** → Returns JSON response
+
+## Database Schema
+
+The application uses a SQLite database with the following core entities:
+
+### Games
+- Board game catalog with BGG (BoardGameGeek) integration
+- Stores player count requirements, complexity, duration
+- Rich metadata including images and descriptions
+
+### Events  
+- Scheduled game sessions with date/time/location
+- Linked to specific games with player count enforcement
+- Support for recurring events and series
+- Status tracking (OPEN/FULL/CANCELLED/COMPLETED)
+
+### Commitments
+- Player commitments to specific events
+- Support for committed/waitlisted/declined statuses
+- Automatic event closure when max players reached
+
+### Additional Features
+- Calendar subscriptions (iCal feeds)
+- Event reminders and notifications
+- Recurring event patterns
+
+## Key Features
+
+### 🎯 **Commitment-Based Scheduling**
+- Players commit to events, not just "maybe" responses
+- Events automatically close when full
+- Waitlist system for popular events
+- Clear participant visibility
+
+### 🎲 **BoardGameGeek Integration**
+- Search and import games from BGG database
+- Accurate player counts and game metadata
+- Rich game information including complexity ratings
+
+### 📅 **Calendar Export**
+- iCal feed generation for personal calendars
+- Subscription-based updates
+- Integration with Google Calendar, Apple Calendar, etc.
+
+### 🔄 **Recurring Events**
+- Weekly, bi-weekly, monthly patterns
+- Automatic event creation
+- Series management for ongoing game groups
+
+### 📱 **Mobile-First Design**
+- Responsive design for all screen sizes
+- Touch-optimized interactions
+- Progressive Web App capabilities
+
+## Security & Production Features
+
+### 🔒 **Security**
+- JWT-based authentication via Artanis service
+- Rate limiting (100 requests per 15 minutes)
+- Security headers (CSP, XSS protection, etc.)
+- CORS configured for benloe.com domains
+- HTTPS enforced with automatic certificates
+
+### 📊 **Monitoring & Reliability**
+- PM2 process management with automatic restarts
+- Health check endpoints (`/api/health`)
+- Structured logging and error tracking
+- Database backups via git repository
+
+### ⚡ **Performance**
+- Optimized Vite builds with tree shaking
+- Efficient SQLite queries with proper indexing
+- CDN-ready static assets
+- Client-side caching with Zustand
+
+## Development & Testing
+
+### Code Quality
+- Full TypeScript coverage
+- ESLint + Prettier for consistent formatting
+- Automated builds with type checking
+- Production-ready error handling
+
+### Testing Suite (Playwright)
+- API health and functionality tests
+- UI interaction and navigation tests
+- Responsive design verification
+- Authentication flow testing
+
+### Development Workflow
+```bash
+# Frontend development
+npm run dev          # Start development server
+npm run build        # Production build
+npm run test         # Run Playwright tests
+
+# Backend development  
+cd api
+npm run dev          # Start API with hot reload
+npm run build        # Compile TypeScript
+npm run db:migrate   # Update database schema
+```
+
+## Deployment
+
+### File Structure
+```
+/var/apps/gamenight/
+├── api/                    # Backend Express server
+│   ├── src/               # TypeScript source
+│   ├── dist/              # Compiled JavaScript  
+│   ├── prisma/            # Database schema & migrations
+│   └── package.json
+├── src/                   # Frontend React app
+├── dist/                  # Built frontend assets
+├── tests/                 # Playwright test suite
+├── playwright.config.ts   # Test configuration
+└── package.json          # Root package.json
+```
+
+### Environment Configuration
+
+**API** (`.env`):
+```env
+NODE_ENV=production
+PORT=3001
+JWT_SECRET=<shared-with-artanis>
+AUTH_SERVICE_URL=http://localhost:3002
+DATABASE_URL=file:./prisma/gamenight.db
+```
+
+**Frontend** (`.env`):
+```env
+VITE_API_URL=/api
+VITE_AUTH_URL=https://auth.benloe.com
+```
+
+### Process Management
+- **gamenight-api**: Express server (PM2 managed)
+- **gamenight-frontend**: Static file server (PM2 managed)
+- Automatic restart on crashes
+- Log rotation and monitoring
 
 ### Caddy Configuration
-
-```
+```caddyfile
 gamenight.benloe.com {
-  reverse_proxy /api/* localhost:3001
-  reverse_proxy /* localhost:3000
+    # API routes
+    reverse_proxy /api/* localhost:3001
+    
+    # Frontend static files
+    reverse_proxy * localhost:3000
+    
+    # Security headers
+    header /* {
+        X-Frame-Options DENY
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+    }
 }
 ```
 
-## Ready to Build
+## API Endpoints
 
-**Next Decision Point**: Start with database schema and API foundation, or begin with frontend mockups to clarify UX requirements?
+### Core Endpoints
+- `GET /api/health` - Service health check
+- `GET /api/games` - List games with filtering
+- `POST /api/games/search` - Search BoardGameGeek
+- `GET /api/events` - List upcoming events
+- `POST /api/events` - Create new event
+- `POST /api/events/:id/join` - Join event
+- `DELETE /api/events/:id/leave` - Leave event
 
-**Recommended First Step**: Generate Prisma schema and initial API routes - this establishes the data model that everything else depends on.
+### Authentication
+- All write operations require JWT token
+- Tokens validated against Artanis auth service
+- User context passed via `creatorId` and `userId` fields
+
+### Rate Limiting
+- 100 requests per 15-minute window per IP
+- Headers included: `RateLimit-Limit`, `RateLimit-Remaining`
+- 429 status code when exceeded
+
+## Future Enhancements
+
+### Planned Features
+- Push notifications for event reminders
+- Game recommendation engine
+- Advanced filtering and search
+- Social features (friend groups, invites)
+- Integration with game collection APIs
+
+### Technical Improvements  
+- Redis caching for frequently accessed data
+- WebSocket connections for real-time updates
+- Database migration to PostgreSQL for scaling
+- CDN integration for static assets
+
+## Maintenance
+
+### Regular Tasks
+- Monitor PM2 process status: `pm2 status`
+- Check application logs: `pm2 logs gamenight-api`
+- Verify SSL certificate renewal (automatic via Caddy)
+- Review rate limiting and security logs
+
+### Backup Strategy
+- Database: Included in git repository
+- Configuration: Stored in `/var/apps/gamenight/`
+- Code: Backed up to GitHub repository
+- Server snapshots: Manual DigitalOcean snapshots
+
+### Troubleshooting
+- **App not loading**: Check PM2 processes, Caddy config
+- **API errors**: Review logs in `/var/apps/gamenight/api/logs/`
+- **Database issues**: Verify SQLite file permissions and disk space
+- **Auth problems**: Confirm Artanis service connectivity
 
 ---
 
-_Architecture optimized for AI-assisted development with clear dependency chains and type safety throughout._
+**Built for the board game community to solve the eternal "how many people are actually coming?" problem. Now you can plan game nights with confidence! 🎲**

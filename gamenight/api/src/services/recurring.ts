@@ -5,6 +5,7 @@ import {
   commitmentService,
   Event,
   RecurringPattern,
+  db,
 } from './database';
 
 export interface RecurringEventData {
@@ -169,7 +170,7 @@ class RecurringEventService {
   }
 
   private getFutureEventsByParent(parentEventId: string): any[] {
-    const { db } = require('./database');
+    // db imported at top
     const now = new Date().toISOString();
     
     // Find all future events that have this event as their parent

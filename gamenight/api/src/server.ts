@@ -17,6 +17,9 @@ import './services/databaseService'; // Initialize database
 const app = express();
 const PORT = process.env['PORT'] || 3001;
 
+// Trust proxy for Express when behind Caddy reverse proxy
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(
   helmet({
@@ -85,7 +88,7 @@ app.get('/api', (_req, res) => {
 });
 
 // Error handling
-app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error:', err);
   res.status(500).json({
     error: process.env['NODE_ENV'] === 'production' ? 'Internal server error' : err.message,

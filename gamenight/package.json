@@ -12,7 +12,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean-code": "npm run lint:fix && npm run format && cd api && npm run lint:fix",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
@@ -27,6 +30,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^8.57.1",
+    "@playwright/test": "^1.55.0",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
