@@ -172,10 +172,12 @@ class RecurringEventService {
   private getFutureEventsByParent(parentEventId: string): any[] {
     // db imported at top
     const now = new Date().toISOString();
-    
+
     // Find all future events that have this event as their parent
     // or that share the same parent (for series events)
-    const futureEvents = db.prepare(`
+    const futureEvents = db
+      .prepare(
+        `
       SELECT e.*, g.name as game_name, g.minPlayers, g.maxPlayers, g.imageUrl as game_imageUrl
       FROM events e 
       JOIN games g ON e.gameId = g.id
@@ -185,8 +187,10 @@ class RecurringEventService {
       AND e.dateTime > ? 
       AND e.status != 'CANCELLED'
       ORDER BY e.dateTime ASC
-    `).all(parentEventId, parentEventId, now);
-    
+    `
+      )
+      .all(parentEventId, parentEventId, now);
+
     return futureEvents.map((row: any) => {
       const event = {
         id: row.id,
@@ -200,17 +204,17 @@ class RecurringEventService {
         commitmentDeadline: row.commitmentDeadline,
         parentEventId: row.parentEventId,
         createdAt: row.createdAt,
-        updatedAt: row.updatedAt
+        updatedAt: row.updatedAt,
       };
-      
+
       const game = {
         id: row.gameId,
         name: row.game_name,
         minPlayers: row.minPlayers,
         maxPlayers: row.maxPlayers,
-        imageUrl: row.game_imageUrl
+        imageUrl: row.game_imageUrl,
       };
-      
+
       return { ...event, game };
     });
   }

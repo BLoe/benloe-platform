@@ -54,11 +54,11 @@ export class AuthService {
   async getUserById(userId: string): Promise<AuthUser | null> {
     try {
       const authServiceUrl = process.env['AUTH_SERVICE_URL'] || 'http://localhost:3002';
-      
+
       const response = await fetch(`${authServiceUrl}/api/auth/user/${userId}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${process.env['INTERNAL_AUTH_TOKEN'] || ''}`,
+          Authorization: `Bearer ${process.env['INTERNAL_AUTH_TOKEN'] || ''}`,
         },
       });
 

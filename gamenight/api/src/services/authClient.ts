@@ -51,7 +51,7 @@ export class AuthClient {
       const response = await fetch(`${this.authServiceUrl}/api/auth/user/${userId}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${process.env['INTERNAL_AUTH_TOKEN'] || ''}`,
+          Authorization: `Bearer ${process.env['INTERNAL_AUTH_TOKEN'] || ''}`,
         },
       });
 

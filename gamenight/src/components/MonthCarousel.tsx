@@ -23,23 +23,23 @@ function MonthCarousel({ onMonthChange, onTodayClick }: MonthCarouselProps) {
 
   const handleNext = () => {
     if (isAnimating) return;
-    
+
     setIsAnimating(true);
-    setCurrentMonth(prev => addMonths(prev, 1));
+    setCurrentMonth((prev) => addMonths(prev, 1));
     setTimeout(() => setIsAnimating(false), 300);
   };
 
   const handlePrev = () => {
     if (isAnimating) return;
-    
+
     setIsAnimating(true);
-    setCurrentMonth(prev => subMonths(prev, 1));
+    setCurrentMonth((prev) => subMonths(prev, 1));
     setTimeout(() => setIsAnimating(false), 300);
   };
 
   const handleTodayClick = () => {
     if (isAnimating) return;
-    
+
     setCurrentMonth(new Date());
     onTodayClick();
   };
@@ -72,7 +72,12 @@ function MonthCarousel({ onMonthChange, onTodayClick }: MonthCarouselProps) {
           className="p-2 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
 

@@ -14,30 +14,50 @@ test.describe('Game Library', () => {
   test('should show empty state when no games exist', async ({ page }) => {
     // Since we cleared test data, should show empty state or search option
     const searchInput = page.locator('input[placeholder*="search" i], input[type="search"]');
-    const addGameButton = page.locator('button:has-text("Add"), button:has-text("Import"), button:has-text("Search")');
-    
+    const addGameButton = page.locator(
+      'button:has-text("Add"), button:has-text("Import"), button:has-text("Search")'
+    );
+
     // Should have either search functionality or add game functionality
-    const hasSearchOrAdd = await searchInput.first().isVisible().catch(() => false) || 
-                          await addGameButton.first().isVisible().catch(() => false);
-    
+    const hasSearchOrAdd =
+      (await searchInput
+        .first()
+        .isVisible()
+        .catch(() => false)) ||
+      (await addGameButton
+        .first()
+        .isVisible()
+        .catch(() => false));
+
     expect(hasSearchOrAdd).toBe(true);
   });
 
   test('should allow searching for games from BGG', async ({ page }) => {
     // Look for BGG search functionality
-    const searchButton = page.locator('button:has-text("Search"), button:has-text("BGG"), button:has-text("BoardGameGeek")');
-    
-    if (await searchButton.first().isVisible().catch(() => false)) {
+    const searchButton = page.locator(
+      'button:has-text("Search"), button:has-text("BGG"), button:has-text("BoardGameGeek")'
+    );
+
+    if (
+      await searchButton
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       await searchButton.first().click();
-      
+
       // Should open search dialog or navigate to search
-      await expect(page.locator('[role="dialog"], .modal, .search-dialog')).toBeVisible({ timeout: 2000 });
+      await expect(page.locator('[role="dialog"], .modal, .search-dialog')).toBeVisible({
+        timeout: 2000,
+      });
     }
   });
 
   test('should handle search input', async ({ page }) => {
-    const searchInput = page.locator('input[placeholder*="search" i], input[type="search"]').first();
-    
+    const searchInput = page
+      .locator('input[placeholder*="search" i], input[type="search"]')
+      .first();
+
     if (await searchInput.isVisible().catch(() => false)) {
       await searchInput.fill('Settlers of Catan');
       // Should trigger search or show results

@@ -17,7 +17,7 @@ class CalendarService {
     const now = new Date();
     const timestamp = now.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
-    let ics = [
+    const ics = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
       'PRODID:-//Game Night//Game Night Calendar//EN',
@@ -168,7 +168,7 @@ class CalendarService {
   // Generate a subscription token for a user
   generateSubscriptionToken(userId: string): string {
     // crypto imported at top
-    
+
     // Create a secure token for calendar subscriptions
     const timestamp = Date.now().toString(36);
     const random = crypto.randomBytes(16).toString('hex');
@@ -177,7 +177,7 @@ class CalendarService {
 
     // Store in database
     this.storeSubscriptionToken(userId, token);
-    
+
     return token;
   }
 
@@ -206,20 +206,24 @@ class CalendarService {
     // db imported at top
     const id = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
-    
+
     // Deactivate any existing tokens for this user
     db.prepare('UPDATE calendar_subscriptions SET active = 0 WHERE userId = ?').run(userId);
-    
+
     // Insert new token
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO calendar_subscriptions (id, userId, token, active, createdAt)
       VALUES (?, ?, ?, 1, ?)
-    `).run(id, userId, token, now);
+    `
+    ).run(id, userId, token, now);
   }
 
   private getSubscriptionByToken(token: string): { userId: string; active: boolean } | null {
     // db imported at top
-    return db.prepare('SELECT userId, active FROM calendar_subscriptions WHERE token = ?').get(token) as { userId: string; active: boolean } | null;
+    return db
+      .prepare('SELECT userId, active FROM calendar_subscriptions WHERE token = ?')
+      .get(token) as { userId: string; active: boolean } | null;
   }
 }
 

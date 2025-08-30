@@ -8,17 +8,19 @@ test.describe('Responsive Design', () => {
   ];
 
   for (const viewport of viewports) {
-    test(`should display correctly on ${viewport.name} (${viewport.width}x${viewport.height})`, async ({ page }) => {
+    test(`should display correctly on ${viewport.name} (${viewport.width}x${viewport.height})`, async ({
+      page,
+    }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await page.goto('/');
 
       // Check that content is visible and properly sized
       await expect(page.locator('body')).toBeVisible();
-      
+
       // Navigation should be responsive
       const nav = page.locator('nav');
       await expect(nav).toBeVisible();
-      
+
       // Check that content doesn't overflow
       const body = await page.locator('body').boundingBox();
       expect(body?.width).toBeLessThanOrEqual(viewport.width + 20); // Allow for scrollbars
@@ -30,11 +32,18 @@ test.describe('Responsive Design', () => {
     await page.goto('/');
 
     // Look for mobile menu button (hamburger menu)
-    const mobileMenuButton = page.locator('button[aria-label*="menu" i], button:has(svg), .hamburger, .mobile-menu');
-    
-    if (await mobileMenuButton.first().isVisible().catch(() => false)) {
+    const mobileMenuButton = page.locator(
+      'button[aria-label*="menu" i], button:has(svg), .hamburger, .mobile-menu'
+    );
+
+    if (
+      await mobileMenuButton
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       await mobileMenuButton.first().click();
-      
+
       // Mobile menu should appear
       await expect(page.locator('.mobile-menu, [role="dialog"], .menu-overlay')).toBeVisible();
     }
@@ -47,12 +56,12 @@ test.describe('Responsive Design', () => {
     // Test touch interactions on clickable elements
     const clickableElements = page.locator('button, a, [role="button"]');
     const count = await clickableElements.count();
-    
+
     if (count > 0) {
       // Verify first clickable element responds to tap
       const firstElement = clickableElements.first();
       await expect(firstElement).toBeVisible();
-      
+
       // Simulate touch by clicking
       await firstElement.click();
     }

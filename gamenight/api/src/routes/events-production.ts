@@ -1,9 +1,5 @@
 import { Router } from 'express';
-import {
-  eventService,
-  commitmentService,
-  gameService,
-} from '../services/databaseService';
+import { eventService, commitmentService, gameService } from '../services/databaseService';
 import { recurringEventService } from '../services/recurring';
 import { authenticate } from '../middleware/auth';
 
@@ -319,7 +315,6 @@ router.post('/recurring', authenticate, async (req, res) => {
 // GET /api/events/:id/recurring - Get recurring pattern for event (requires auth)
 router.get('/:id/recurring', authenticate, (_req, res) => {
   try {
-
     // Recurring patterns functionality is not yet implemented
     res.status(501).json({ error: 'Recurring patterns not yet implemented' });
   } catch (error) {

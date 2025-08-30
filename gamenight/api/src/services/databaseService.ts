@@ -213,10 +213,12 @@ export const gameService = {
       const now = new Date().toISOString();
       const game = { ...data, id, createdAt: now, updatedAt: now };
 
-      db.prepare(`
+      db.prepare(
+        `
         INSERT INTO games (id, name, minPlayers, maxPlayers, duration, complexity, bggId, imageUrl, description, bestWith, createdAt, updatedAt)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
+      `
+      ).run(
         game.id,
         game.name,
         game.minPlayers,
@@ -245,7 +247,7 @@ export const gameService = {
     try {
       const updatedAt = new Date().toISOString();
       const updateData = { ...data, updatedAt };
-      
+
       const fields = Object.keys(updateData).filter((key) => key !== 'id' && key !== 'createdAt');
       if (fields.length === 0) return gameService.getById(id);
 
@@ -253,7 +255,7 @@ export const gameService = {
       const setClause = fields.map((field) => `${field} = ?`).join(', ');
 
       const result = db.prepare(`UPDATE games SET ${setClause} WHERE id = ?`).run(...values, id);
-      
+
       if (result.changes === 0) {
         return null;
       }
@@ -398,10 +400,12 @@ export const eventService = {
         throw new Error('Game not found');
       }
 
-      db.prepare(`
+      db.prepare(
+        `
         INSERT INTO events (id, title, gameId, dateTime, location, description, status, creatorId, commitmentDeadline, parentEventId, createdAt, updatedAt)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
+      `
+      ).run(
         event.id,
         event.title || null,
         event.gameId,
@@ -427,7 +431,7 @@ export const eventService = {
     try {
       const updatedAt = new Date().toISOString();
       const updateData = { ...data, updatedAt };
-      
+
       const fields = Object.keys(updateData).filter((key) => key !== 'id' && key !== 'createdAt');
       if (fields.length === 0) return eventService.getById(id);
 
@@ -435,7 +439,7 @@ export const eventService = {
       const setClause = fields.map((field) => `${field} = ?`).join(', ');
 
       const result = db.prepare(`UPDATE events SET ${setClause} WHERE id = ?`).run(...values, id);
-      
+
       if (result.changes === 0) {
         return null;
       }
@@ -490,10 +494,12 @@ export const commitmentService = {
       const joinedAt = new Date().toISOString();
       const commitment = { ...data, id, joinedAt };
 
-      db.prepare(`
+      db.prepare(
+        `
         INSERT INTO commitments (id, eventId, userId, status, joinedAt, notes)
         VALUES (?, ?, ?, ?, ?, ?)
-      `).run(
+      `
+      ).run(
         commitment.id,
         commitment.eventId,
         commitment.userId,
@@ -516,14 +522,18 @@ export const commitmentService = {
     try {
       const fields = Object.keys(data).filter((key) => key !== 'id' && key !== 'joinedAt');
       if (fields.length === 0) {
-        const commitment = db.prepare('SELECT * FROM commitments WHERE id = ?').get(id) as Commitment | undefined;
+        const commitment = db.prepare('SELECT * FROM commitments WHERE id = ?').get(id) as
+          | Commitment
+          | undefined;
         return commitment || null;
       }
 
       const values = fields.map((field) => data[field as keyof typeof data]);
       const setClause = fields.map((field) => `${field} = ?`).join(', ');
 
-      const result = db.prepare(`UPDATE commitments SET ${setClause} WHERE id = ?`).run(...values, id);
+      const result = db
+        .prepare(`UPDATE commitments SET ${setClause} WHERE id = ?`)
+        .run(...values, id);
 
       if (result.changes === 0) {
         return null;

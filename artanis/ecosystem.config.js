@@ -10,7 +10,9 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 3002,
         DATABASE_URL: 'file:./artanis.db',
-        JWT_SECRET: process.env.JWT_SECRET || 'artanis-benloe-auth-jwt-2024-production-secure-key-v2',
+        JWT_SECRET:
+          process.env.JWT_SECRET ||
+          'artanis-benloe-auth-jwt-2024-production-secure-key-v2',
         JWT_EXPIRES_IN: '30d',
         MAILGUN_API_KEY: process.env.MAILGUN_API_KEY,
         MAILGUN_DOMAIN: 'mail.benloe.com',
