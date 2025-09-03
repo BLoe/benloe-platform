@@ -15,29 +15,29 @@ function calculate1RM(weight: number, reps: number): number {
 router.get('/', authenticate, async (req, res) => {
   try {
     const { exerciseId, limit = '100' } = req.query;
-    
+
     const where: any = {};
-    
+
     // First verify the exercise belongs to the user
     if (exerciseId) {
       const exercise = await prisma.exercise.findFirst({
-        where: { 
+        where: {
           id: exerciseId as string,
-          userId: req.user!.id 
-        }
+          userId: req.user!.id,
+        },
       });
-      
+
       if (!exercise) {
         return res.status(404).json({ error: 'Exercise not found' });
       }
-      
+
       where.exerciseId = exerciseId as string;
     }
 
     const workouts = await prisma.workout.findMany({
       where: {
         userId: req.user!.id,
-        ...where
+        ...where,
       },
       include: {
         exercise: true,
@@ -59,17 +59,17 @@ router.post('/', authenticate, async (req, res) => {
     const { exerciseId, weight, reps } = req.body;
 
     if (!exerciseId || !weight || !reps) {
-      return res.status(400).json({ 
-        error: 'exerciseId, weight, and reps are required' 
+      return res.status(400).json({
+        error: 'exerciseId, weight, and reps are required',
       });
     }
 
     // Verify the exercise belongs to the user
     const exercise = await prisma.exercise.findFirst({
-      where: { 
+      where: {
         id: exerciseId,
-        userId: req.user!.id 
-      }
+        userId: req.user!.id,
+      },
     });
 
     if (!exercise) {
@@ -122,7 +122,7 @@ router.get('/today', authenticate, async (req, res) => {
 
     res.json({ workouts });
   } catch (error) {
-    console.error('Error fetching today\'s workouts:', error);
+    console.error("Error fetching today's workouts:", error);
     res.status(500).json({ error: 'Failed to fetch workouts' });
   }
 });
@@ -133,10 +133,10 @@ router.delete('/:id', authenticate, async (req, res) => {
     const { id } = req.params;
 
     const workout = await prisma.workout.findFirst({
-      where: { 
+      where: {
         id,
-        userId: req.user!.id 
-      }
+        userId: req.user!.id,
+      },
     });
 
     if (!workout) {

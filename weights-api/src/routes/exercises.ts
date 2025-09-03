@@ -12,7 +12,7 @@ router.get('/', authenticate, async (req, res) => {
       where: { userId: req.user!.id },
       orderBy: { createdAt: 'asc' },
     });
-    
+
     res.json({ exercises });
   } catch (error) {
     console.error('Error fetching exercises:', error);
@@ -24,21 +24,23 @@ router.get('/', authenticate, async (req, res) => {
 router.post('/', authenticate, async (req, res) => {
   try {
     const { name, initialWeight } = req.body;
-    
+
     if (!name) {
       return res.status(400).json({ error: 'Exercise name is required' });
     }
 
     if (!initialWeight || initialWeight <= 0) {
-      return res.status(400).json({ error: 'Initial PR weight is required and must be greater than 0' });
+      return res
+        .status(400)
+        .json({ error: 'Initial PR weight is required and must be greater than 0' });
     }
 
     // Check if exercise already exists for this user
     const existing = await prisma.exercise.findFirst({
-      where: { 
+      where: {
         userId: req.user!.id,
-        name: name.trim() 
-      }
+        name: name.trim(),
+      },
     });
 
     if (existing) {
@@ -73,7 +75,7 @@ router.post('/', authenticate, async (req, res) => {
       },
     });
 
-    res.status(201).json({ 
+    res.status(201).json({
       exercise,
       pr: {
         weight: initialWeight,
@@ -93,10 +95,10 @@ router.delete('/:id', authenticate, async (req, res) => {
     const { id } = req.params;
 
     const exercise = await prisma.exercise.findFirst({
-      where: { 
+      where: {
         id,
-        userId: req.user!.id 
-      }
+        userId: req.user!.id,
+      },
     });
 
     if (!exercise) {

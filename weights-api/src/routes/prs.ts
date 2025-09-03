@@ -17,9 +17,9 @@ router.get('/', authenticate, async (req, res) => {
         },
       },
     });
-    
+
     const prs: Record<string, { weight: number; createdAt: Date }> = {};
-    
+
     exercises.forEach(exercise => {
       if (exercise.workouts.length > 0) {
         const maxWorkout = exercise.workouts[0];
@@ -29,7 +29,7 @@ router.get('/', authenticate, async (req, res) => {
         };
       }
     });
-    
+
     res.json({ prs });
   } catch (error) {
     console.error('Error fetching PRs:', error);
@@ -45,7 +45,7 @@ router.get('/history', authenticate, async (req, res) => {
       orderBy: { createdAt: 'desc' },
       take: 50,
     });
-    
+
     res.json({ history });
   } catch (error) {
     console.error('Error fetching PR history:', error);
@@ -57,17 +57,17 @@ router.get('/history', authenticate, async (req, res) => {
 router.post('/', authenticate, async (req, res) => {
   try {
     const { exerciseId, weight } = req.body;
-    
+
     if (!exerciseId || !weight || weight <= 0) {
       return res.status(400).json({ error: 'Exercise ID and weight are required' });
     }
 
     // Verify exercise belongs to user
     const exercise = await prisma.exercise.findFirst({
-      where: { 
+      where: {
         id: exerciseId,
-        userId: req.user!.id 
-      }
+        userId: req.user!.id,
+      },
     });
 
     if (!exercise) {
@@ -76,19 +76,19 @@ router.post('/', authenticate, async (req, res) => {
 
     // Get current PR
     const currentBest = await prisma.workout.findFirst({
-      where: { 
+      where: {
         exerciseId,
-        userId: req.user!.id 
+        userId: req.user!.id,
       },
-      orderBy: { weight: 'desc' }
+      orderBy: { weight: 'desc' },
     });
 
     const currentPR = currentBest?.weight || 0;
-    
+
     // Only allow updates that are actual improvements
     if (weight <= currentPR) {
-      return res.status(400).json({ 
-        error: `New weight (${weight} lbs) must be greater than current PR (${currentPR} lbs)` 
+      return res.status(400).json({
+        error: `New weight (${weight} lbs) must be greater than current PR (${currentPR} lbs)`,
       });
     }
 
@@ -113,7 +113,7 @@ router.post('/', authenticate, async (req, res) => {
       },
     });
 
-    res.status(201).json({ 
+    res.status(201).json({
       pr: {
         weight: weight,
         createdAt: newWorkout.createdAt,
