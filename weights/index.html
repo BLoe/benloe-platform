@@ -1,522 +1,636 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Weight Tracker - Ben's Lifts</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PR Tracker - Personal Records</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      .exercise-card {
-        transition: all 0.2s ease-in-out;
-      }
-      .exercise-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      }
+        .exercise-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .exercise-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .pr-celebration {
+            animation: prBounce 0.6s ease-out;
+            transform-origin: center;
+        }
+        
+        @keyframes prBounce {
+            0% { transform: scale(1) rotateZ(0deg); }
+            25% { transform: scale(1.1) rotateZ(-3deg); }
+            50% { transform: scale(1.2) rotateZ(3deg); }
+            75% { transform: scale(1.1) rotateZ(-1deg); }
+            100% { transform: scale(1) rotateZ(0deg); }
+        }
+        
+        .pr-number {
+            transition: all 0.3s ease;
+        }
+        
+        .pr-card {
+            transition: all 0.2s ease;
+        }
+        
+        .pr-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .increment-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .increment-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .increment-btn:active {
+            transform: scale(0.95);
+        }
     </style>
-  </head>
-  <body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
-      <!-- Header -->
-      <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">💪 Weight Tracker</h1>
-        <p class="text-gray-600">Track your lifting progress</p>
-        <div class="mt-4">
-          <button
-            id="toggleExerciseManager"
-            class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 font-medium"
-          >
-            Manage Exercises
-          </button>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Authentication Check -->
+    <div id="authCheck" class="flex items-center justify-center min-h-screen">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Checking authentication...</p>
         </div>
-      </div>
-
-      <!-- Exercise Manager (Hidden by default) -->
-      <div id="exerciseManager" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-semibold text-gray-800">Manage Exercises</h2>
-          <button id="closeExerciseManager" class="text-gray-500 hover:text-gray-700">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Add New Exercise Form -->
-        <div class="mb-6 p-4 bg-gray-50 rounded-md">
-          <h3 class="font-semibold text-gray-800 mb-3">Add New Exercise</h3>
-          <form id="newExerciseForm" class="flex gap-3">
-            <input
-              type="text"
-              id="newExerciseName"
-              placeholder="Exercise name..."
-              class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <button
-              type="submit"
-              class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium"
-            >
-              Add Exercise
-            </button>
-          </form>
-        </div>
-
-        <!-- Exercise List -->
-        <div>
-          <h3 class="font-semibold text-gray-800 mb-3">Current Exercises</h3>
-          <div id="exerciseList" class="space-y-2">
-            <!-- Exercise list will be populated here -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Add Form -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Log New Lift</h2>
-        <form id="liftForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Exercise</label>
-            <select
-              id="exercise"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Select exercise...</option>
-            </select>
-          </div>
-
-          <div id="customExerciseDiv" class="hidden">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Custom Exercise</label>
-            <input
-              type="text"
-              id="customExercise"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter exercise name"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Weight (lbs)</label>
-            <input
-              type="number"
-              id="weight"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              step="2.5"
-              min="0"
-              required
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Reps</label>
-            <input
-              type="number"
-              id="reps"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              min="1"
-              required
-            />
-          </div>
-
-          <div class="flex items-end">
-            <button
-              type="submit"
-              class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
-            >
-              Add Lift
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Today's Workout -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Today's Workout</h2>
-        <div id="todayWorkout" class="space-y-3">
-          <p class="text-gray-500 text-center py-4">No lifts logged today. Start lifting!</p>
-        </div>
-      </div>
-
-      <!-- Exercise History -->
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Exercise Progress</h2>
-        <div id="exerciseHistory" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <p class="text-gray-500 text-center py-8 col-span-full">
-            No workout history yet. Add your first lift above!
-          </p>
-        </div>
-      </div>
-
-      <!-- Clear Data Button -->
-      <div class="text-center mt-8">
-        <button
-          id="clearData"
-          class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 font-medium"
-        >
-          Clear All Data
-        </button>
-      </div>
     </div>
 
+    <!-- Not Authenticated -->
+    <div id="notAuthenticated" class="flex items-center justify-center min-h-screen hidden">
+        <div class="text-center bg-white p-8 rounded-lg shadow-md max-w-md">
+            <h1 class="text-2xl font-bold text-gray-800 mb-4">🔐 Authentication Required</h1>
+            <p class="text-gray-600 mb-6">Please sign in to access your personal weight tracker.</p>
+            <a href="https://auth.benloe.com/?redirect=https://weights.benloe.com" 
+               class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium inline-block">
+                Sign In
+            </a>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="container mx-auto px-4 py-8 max-w-4xl hidden">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🏆 PR Tracker</h1>
+            <p class="text-gray-600">Track your personal records and celebrate your progress</p>
+            <div class="mt-4 flex justify-center items-center gap-4">
+                <span id="userGreeting" class="text-gray-700"></span>
+                <button id="toggleExerciseManager" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 font-medium">
+                    Manage Exercises
+                </button>
+                <a href="https://auth.benloe.com/dashboard" class="text-blue-600 hover:text-blue-700">
+                    Account
+                </a>
+            </div>
+        </div>
+
+        <!-- Exercise Manager -->
+        <div id="exerciseManager" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800">Manage Exercises</h2>
+                <button id="closeExerciseManager" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="mb-6 p-4 bg-gray-50 rounded-md">
+                <h3 class="font-semibold text-gray-800 mb-3">Add New Exercise</h3>
+                <form id="newExerciseForm" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <input type="text" id="newExerciseName" placeholder="Exercise name..." class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <input type="number" id="newExerciseWeight" placeholder="Starting PR (lbs)" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" step="2.5" min="0" required>
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium">
+                        Add Exercise
+                    </button>
+                </form>
+            </div>
+            
+            <div>
+                <h3 class="font-semibold text-gray-800 mb-3">Your Exercises</h3>
+                <div id="exerciseList" class="space-y-2">
+                    <!-- Exercise list will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Current PRs -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6">🏆 Your Personal Records</h2>
+            <div id="currentPRs" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <p class="text-gray-500 text-center py-8 col-span-full">Add some exercises to start tracking your PRs!</p>
+            </div>
+        </div>
+
+        <!-- PR History Chart -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">📈 Progress Over Time</h2>
+            <div id="prChart" class="h-64 flex items-center justify-center">
+                <p class="text-gray-500 text-center">Charts will appear here as you track your PRs!</p>
+            </div>
+        </div>
+
+        <!-- PR History -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">📜 PR History</h2>
+            <div id="prHistory" class="space-y-4">
+                <p class="text-gray-500 text-center py-8">No PR history yet. Update some records to see your progress!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script>
-      class WeightTracker {
-        constructor() {
-          this.workouts = JSON.parse(localStorage.getItem('weightTracker') || '[]');
-          this.exercises = JSON.parse(localStorage.getItem('weightTrackerExercises') || '[]');
-          this.initializeDefaultExercises();
-          this.initializeEventListeners();
-          this.render();
-        }
-
-        initializeDefaultExercises() {
-          if (this.exercises.length === 0) {
-            this.exercises = [
-              'Bench Press',
-              'Squat',
-              'Deadlift',
-              'Overhead Press',
-              'Barbell Row',
-              'Pull-up',
-              'Dip',
-            ];
-            this.saveExercises();
-          }
-        }
-
-        initializeEventListeners() {
-          document.getElementById('liftForm').addEventListener('submit', e => {
-            e.preventDefault();
-            this.addLift();
-          });
-
-          document.getElementById('exercise').addEventListener('change', e => {
-            const customDiv = document.getElementById('customExerciseDiv');
-            if (e.target.value === 'Custom') {
-              customDiv.classList.remove('hidden');
-              document.getElementById('customExercise').required = true;
-            } else {
-              customDiv.classList.add('hidden');
-              document.getElementById('customExercise').required = false;
+        class PRTracker {
+            constructor() {
+                this.user = null;
+                this.exercises = [];
+                this.prs = {}; // Store current PRs by exercise ID
+                this.prHistory = []; // Store all PR updates
+                this.chart = null;
+                this.init();
             }
-          });
 
-          document.getElementById('clearData').addEventListener('click', () => {
-            if (
-              confirm('Are you sure you want to clear all workout data? This cannot be undone.')
-            ) {
-              this.clearAllData();
+            async init() {
+                try {
+                    await this.checkAuth();
+                    if (this.user) {
+                        await this.loadData();
+                        this.initializeEventListeners();
+                        this.render();
+                        this.showMainApp();
+                    } else {
+                        this.showNotAuthenticated();
+                    }
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    this.showNotAuthenticated();
+                }
             }
-          });
 
-          // Exercise manager event listeners
-          document.getElementById('toggleExerciseManager').addEventListener('click', () => {
-            this.toggleExerciseManager();
-          });
-
-          document.getElementById('closeExerciseManager').addEventListener('click', () => {
-            this.toggleExerciseManager();
-          });
-
-          document.getElementById('newExerciseForm').addEventListener('submit', e => {
-            e.preventDefault();
-            this.addNewExercise();
-          });
-        }
-
-        addLift() {
-          const exerciseSelect = document.getElementById('exercise');
-          const customExercise = document.getElementById('customExercise');
-          const weight = parseFloat(document.getElementById('weight').value);
-          const reps = parseInt(document.getElementById('reps').value);
-
-          let exerciseName = exerciseSelect.value;
-          if (exerciseName === 'Custom') {
-            exerciseName = customExercise.value.trim();
-          }
-
-          if (!exerciseName || !weight || !reps) return;
-
-          const lift = {
-            id: Date.now(),
-            exercise: exerciseName,
-            weight: weight,
-            reps: reps,
-            date: new Date().toISOString(),
-            oneRepMax: this.calculateOneRepMax(weight, reps),
-          };
-
-          this.workouts.push(lift);
-          this.saveData();
-          this.render();
-          this.resetForm();
-        }
-
-        calculateOneRepMax(weight, reps) {
-          // Using Brzycki formula: 1RM = weight / (1.0278 - (0.0278 * reps))
-          if (reps === 1) return weight;
-          return Math.round((weight / (1.0278 - 0.0278 * reps)) * 10) / 10;
-        }
-
-        resetForm() {
-          document.getElementById('liftForm').reset();
-          document.getElementById('customExerciseDiv').classList.add('hidden');
-          document.getElementById('customExercise').required = false;
-        }
-
-        getTodayWorkouts() {
-          const today = new Date().toDateString();
-          return this.workouts.filter(workout => new Date(workout.date).toDateString() === today);
-        }
-
-        getExerciseHistory() {
-          const exercises = {};
-          this.workouts.forEach(workout => {
-            if (!exercises[workout.exercise]) {
-              exercises[workout.exercise] = [];
+            async checkAuth() {
+                try {
+                    const response = await fetch('/api/exercises', {
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        // We can make authenticated requests, get user info
+                        const authResponse = await fetch('https://auth.benloe.com/api/auth/me', {
+                            credentials: 'include'
+                        });
+                        
+                        if (authResponse.ok) {
+                            const data = await authResponse.json();
+                            this.user = data.user;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Auth check failed:', error);
+                }
             }
-            exercises[workout.exercise].push(workout);
-          });
 
-          // Sort each exercise by date
-          Object.keys(exercises).forEach(exercise => {
-            exercises[exercise].sort((a, b) => new Date(b.date) - new Date(a.date));
-          });
+            async loadData() {
+                await Promise.all([
+                    this.loadExercises(),
+                    this.loadPRs(),
+                    this.loadPRHistory()
+                ]);
+            }
 
-          return exercises;
-        }
+            async loadExercises() {
+                try {
+                    const response = await fetch('/api/exercises', {
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.exercises = data.exercises || [];
+                    }
+                } catch (error) {
+                    console.error('Failed to load exercises:', error);
+                }
+            }
 
-        renderTodayWorkout() {
-          const container = document.getElementById('todayWorkout');
-          const todayWorkouts = this.getTodayWorkouts();
+            async loadPRs() {
+                try {
+                    const response = await fetch('/api/prs', {
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.prs = data.prs || {};
+                    }
+                } catch (error) {
+                    console.error('Failed to load PRs:', error);
+                    this.prs = {};
+                }
+            }
 
-          if (todayWorkouts.length === 0) {
-            container.innerHTML =
-              '<p class="text-gray-500 text-center py-4">No lifts logged today. Start lifting!</p>';
-            return;
-          }
+            async loadPRHistory() {
+                try {
+                    const response = await fetch('/api/prs/history', {
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.prHistory = data.history || [];
+                    }
+                } catch (error) {
+                    console.error('Failed to load PR history:', error);
+                    this.prHistory = [];
+                }
+            }
 
-          container.innerHTML = todayWorkouts
-            .map(
-              workout => `
-                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-md">
-                        <div>
-                            <span class="font-medium">${workout.exercise}</span>
-                            <span class="text-gray-600 ml-2">${workout.weight} lbs × ${workout.reps} reps</span>
-                        </div>
-                        <div class="text-sm text-gray-500">
-                            1RM: ${workout.oneRepMax} lbs
-                        </div>
-                    </div>
-                `
-            )
-            .join('');
-        }
+            async addExercise(name, initialWeight) {
+                try {
+                    const response = await fetch('/api/exercises', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({ name, initialWeight })
+                    });
 
-        renderExerciseHistory() {
-          const container = document.getElementById('exerciseHistory');
-          const exerciseHistory = this.getExerciseHistory();
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.exercises.push(data.exercise);
+                        
+                        // Update local PR data if initial PR was set
+                        if (data.pr) {
+                            this.prs[data.exercise.id] = data.pr;
+                        }
+                        
+                        // Update local PR history if available
+                        if (data.prHistory) {
+                            this.prHistory.unshift(data.prHistory);
+                        }
 
-          if (Object.keys(exerciseHistory).length === 0) {
-            container.innerHTML =
-              '<p class="text-gray-500 text-center py-8 col-span-full">No workout history yet. Add your first lift above!</p>';
-            return;
-          }
+                        this.renderExerciseList();
+                        this.renderPRs();
+                        this.renderPRHistory();
+                        this.renderChart();
+                        return true;
+                    } else {
+                        const error = await response.json();
+                        alert(error.error || 'Failed to add exercise');
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Failed to add exercise:', error);
+                    alert('Failed to add exercise');
+                    return false;
+                }
+            }
 
-          container.innerHTML = Object.keys(exerciseHistory)
-            .map(exercise => {
-              const workouts = exerciseHistory[exercise];
-              const recent = workouts.slice(0, 3);
-              const maxWeight = Math.max(...workouts.map(w => w.weight));
-              const maxOneRM = Math.max(...workouts.map(w => w.oneRepMax));
+            async updatePR(exerciseId, newWeight) {
+                try {
+                    const response = await fetch('/api/prs', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({ exerciseId, weight: newWeight })
+                    });
 
-              return `
-                        <div class="exercise-card bg-gray-50 p-4 rounded-md">
-                            <h3 class="font-semibold text-lg text-gray-800 mb-2">${exercise}</h3>
-                            <div class="text-sm text-gray-600 mb-3">
-                                <div>Max Weight: <span class="font-medium">${maxWeight} lbs</span></div>
-                                <div>Est. 1RM: <span class="font-medium">${maxOneRM} lbs</span></div>
-                                <div>Total Sets: <span class="font-medium">${workouts.length}</span></div>
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.prs[exerciseId] = data.pr;
+                        this.prHistory.unshift(data.history);
+                        this.renderPRs();
+                        this.renderPRHistory();
+                        this.renderChart();
+                        return true;
+                    } else {
+                        const error = await response.json();
+                        alert(error.error || 'Failed to update PR');
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Failed to update PR:', error);
+                    alert('Failed to update PR');
+                    return false;
+                }
+            }
+
+            async deleteExercise(exerciseId) {
+                try {
+                    const response = await fetch(`/api/exercises/${exerciseId}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+
+                    if (response.ok) {
+                        this.exercises = this.exercises.filter(ex => ex.id !== exerciseId);
+                        delete this.prs[exerciseId];
+                        this.prHistory = this.prHistory.filter(h => h.exerciseId !== exerciseId);
+                        this.renderExerciseList();
+                        this.renderPRs();
+                        this.renderPRHistory();
+                        this.renderChart();
+                        return true;
+                    } else {
+                        const error = await response.json();
+                        alert(error.error || 'Failed to delete exercise');
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Failed to delete exercise:', error);
+                    alert('Failed to delete exercise');
+                    return false;
+                }
+            }
+
+            initializeEventListeners() {
+                document.getElementById('newExerciseForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.handleAddExercise();
+                });
+
+                document.getElementById('toggleExerciseManager').addEventListener('click', () => {
+                    const manager = document.getElementById('exerciseManager');
+                    manager.classList.toggle('hidden');
+                });
+
+                document.getElementById('closeExerciseManager').addEventListener('click', () => {
+                    document.getElementById('exerciseManager').classList.add('hidden');
+                });
+
+                // PR increment event handlers will be added dynamically in renderPRs
+            }
+
+            async handleIncrementPR(exerciseId, increment) {
+                const currentPR = this.prs[exerciseId]?.weight || 0;
+                const newWeight = currentPR + increment;
+                
+                const success = await this.updatePR(exerciseId, newWeight);
+                if (success) {
+                    this.animatePRUpdate(exerciseId);
+                }
+            }
+
+            animatePRUpdate(exerciseId) {
+                const prCard = document.querySelector(`[data-exercise-id="${exerciseId}"]`);
+                if (prCard) {
+                    prCard.classList.add('pr-celebration');
+                    setTimeout(() => {
+                        prCard.classList.remove('pr-celebration');
+                    }, 600);
+                }
+            }
+
+            async handleAddExercise() {
+                const form = document.getElementById('newExerciseForm');
+                const name = document.getElementById('newExerciseName').value.trim();
+                const weight = parseFloat(document.getElementById('newExerciseWeight').value);
+
+                if (!name) {
+                    alert('Please enter an exercise name');
+                    return;
+                }
+
+                if (!weight || weight <= 0) {
+                    alert('Please enter a starting PR weight');
+                    return;
+                }
+
+                form.classList.add('loading');
+
+                const success = await this.addExercise(name, weight);
+                if (success) {
+                    form.reset();
+                }
+
+                form.classList.remove('loading');
+            }
+
+            render() {
+                if (this.user) {
+                    document.getElementById('userGreeting').textContent = 
+                        `Hello, ${this.user.name || this.user.email}!`;
+                }
+                
+                this.renderExerciseList();
+                this.renderPRs();
+                this.renderPRHistory();
+                this.renderChart();
+            }
+
+            renderPRs() {
+                const container = document.getElementById('currentPRs');
+                
+                if (this.exercises.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8 col-span-full">Add some exercises to start tracking your PRs!</p>';
+                    return;
+                }
+
+                container.innerHTML = this.exercises.map(exercise => {
+                    const currentPR = this.prs[exercise.id]?.weight || 0;
+                    return `
+                        <div class="pr-card bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200" data-exercise-id="${exercise.id}">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">${exercise.name}</h3>
+                            <div class="text-center mb-4">
+                                <div class="text-3xl font-bold text-blue-600 pr-number">${currentPR} lbs</div>
+                                <div class="text-sm text-gray-500">Current PR</div>
                             </div>
-                            <div class="text-xs text-gray-500">
-                                <div class="font-medium mb-1">Recent:</div>
-                                ${recent
-                                  .map(
-                                    w => `
-                                    <div>${w.weight} lbs × ${w.reps} (${new Date(w.date).toLocaleDateString()})</div>
-                                `
-                                  )
-                                  .join('')}
+                            <div class="flex gap-2 justify-center">
+                                <button onclick="app.handleIncrementPR('${exercise.id}', 2.5)" 
+                                        class="increment-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                    +2.5
+                                </button>
+                                <button onclick="app.handleIncrementPR('${exercise.id}', 5)" 
+                                        class="increment-btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                    +5
+                                </button>
+                                <button onclick="app.handleIncrementPR('${exercise.id}', 10)" 
+                                        class="increment-btn bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                    +10
+                                </button>
                             </div>
                         </div>
                     `;
-            })
-            .join('');
-        }
-
-        render() {
-          this.renderTodayWorkout();
-          this.renderExerciseHistory();
-          this.renderExerciseDropdown();
-          this.renderExerciseList();
-        }
-
-        toggleExerciseManager() {
-          const manager = document.getElementById('exerciseManager');
-          manager.classList.toggle('hidden');
-        }
-
-        addNewExercise() {
-          const nameInput = document.getElementById('newExerciseName');
-          const exerciseName = nameInput.value.trim();
-
-          if (!exerciseName) return;
-
-          if (this.exercises.includes(exerciseName)) {
-            alert('Exercise already exists!');
-            return;
-          }
-
-          this.exercises.push(exerciseName);
-          this.exercises.sort();
-          this.saveExercises();
-          this.render();
-          nameInput.value = '';
-        }
-
-        editExercise(oldName, newName) {
-          if (!newName.trim()) return;
-
-          const index = this.exercises.indexOf(oldName);
-          if (index === -1) return;
-
-          if (this.exercises.includes(newName) && newName !== oldName) {
-            alert('Exercise already exists!');
-            return;
-          }
-
-          // Update exercise in list
-          this.exercises[index] = newName;
-          this.exercises.sort();
-
-          // Update any existing workouts with the old name
-          this.workouts.forEach(workout => {
-            if (workout.exercise === oldName) {
-              workout.exercise = newName;
+                }).join('');
             }
-          });
 
-          this.saveExercises();
-          this.saveData();
-          this.render();
-        }
+            renderExerciseList() {
+                const list = document.getElementById('exerciseList');
+                
+                if (this.exercises.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500 text-center py-4">No exercises yet. Add your first exercise above!</p>';
+                    return;
+                }
 
-        deleteExercise(exerciseName) {
-          if (
-            !confirm(
-              `Are you sure you want to delete "${exerciseName}"? This will also remove all workout data for this exercise.`
-            )
-          ) {
-            return;
-          }
-
-          // Remove from exercise list
-          this.exercises = this.exercises.filter(ex => ex !== exerciseName);
-
-          // Remove all workouts for this exercise
-          this.workouts = this.workouts.filter(workout => workout.exercise !== exerciseName);
-
-          this.saveExercises();
-          this.saveData();
-          this.render();
-        }
-
-        renderExerciseDropdown() {
-          const select = document.getElementById('exercise');
-          const currentValue = select.value;
-
-          select.innerHTML = '<option value="">Select exercise...</option>';
-
-          this.exercises.forEach(exercise => {
-            const option = document.createElement('option');
-            option.value = exercise;
-            option.textContent = exercise;
-            select.appendChild(option);
-          });
-
-          const customOption = document.createElement('option');
-          customOption.value = 'Custom';
-          customOption.textContent = 'Custom...';
-          select.appendChild(customOption);
-
-          // Restore selected value if it still exists
-          if (
-            currentValue &&
-            (this.exercises.includes(currentValue) || currentValue === 'Custom')
-          ) {
-            select.value = currentValue;
-          }
-        }
-
-        renderExerciseList() {
-          const container = document.getElementById('exerciseList');
-
-          if (this.exercises.length === 0) {
-            container.innerHTML =
-              '<p class="text-gray-500 text-center py-4">No exercises added yet.</p>';
-            return;
-          }
-
-          container.innerHTML = this.exercises
-            .map(
-              exercise => `
-                    <div class="flex justify-between items-center bg-gray-100 p-3 rounded-md">
-                        <div class="flex-1">
-                            <span class="font-medium text-gray-800">${exercise}</span>
+                list.innerHTML = this.exercises.map(exercise => `
+                    <div class="flex justify-between items-center p-3 bg-white border rounded-md">
+                        <div>
+                            <span class="font-medium">${exercise.name}</span>
+                            <div class="text-sm text-gray-500">
+                                PR: ${this.prs[exercise.id]?.weight || 0} lbs
+                            </div>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="app.editExercisePrompt('${exercise.replace(/'/g, "\\'")}')" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                Edit
-                            </button>
-                            <button onclick="app.deleteExercise('${exercise.replace(/'/g, "\\'")}')" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400">
+                                Added ${new Date(exercise.createdAt).toLocaleDateString()}
+                            </span>
+                            <button onclick="app.deleteExercise('${exercise.id}')" 
+                                    class="text-red-500 hover:text-red-700 text-sm font-medium">
                                 Delete
                             </button>
                         </div>
                     </div>
-                `
-            )
-            .join('');
+                `).join('');
+            }
+
+            renderPRHistory() {
+                const container = document.getElementById('prHistory');
+                
+                if (!this.prHistory || this.prHistory.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8">No PR history yet. Update some records to see your progress!</p>';
+                    return;
+                }
+
+                container.innerHTML = this.prHistory.slice(0, 10).map(history => {
+                    const exercise = this.exercises.find(ex => ex.id === history.exerciseId);
+                    const exerciseName = exercise?.name || 'Unknown Exercise';
+                    const increase = history.previousWeight ? ` (+${history.weight - history.previousWeight})` : '';
+                    
+                    return `
+                        <div class="flex justify-between items-center p-4 border rounded-md">
+                            <div>
+                                <span class="font-medium">${exerciseName}</span>
+                                <span class="text-gray-600 ml-2">New PR: ${history.weight} lbs${increase}</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-medium text-green-600">🎉 PR!</div>
+                                <div class="text-xs text-gray-500">${new Date(history.createdAt).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            renderChart() {
+                const chartContainer = document.getElementById('prChart');
+                
+                if (!this.prHistory || this.prHistory.length === 0) {
+                    chartContainer.innerHTML = '<p class="text-gray-500 text-center">Charts will appear here as you track your PRs!</p>';
+                    return;
+                }
+
+                // Destroy existing chart
+                if (this.chart) {
+                    this.chart.destroy();
+                }
+
+                // Create canvas if it doesn't exist
+                let canvas = chartContainer.querySelector('canvas');
+                if (!canvas) {
+                    chartContainer.innerHTML = '<canvas id="prChartCanvas"></canvas>';
+                    canvas = document.getElementById('prChartCanvas');
+                }
+
+                // Prepare data for chart
+                const exerciseData = {};
+                
+                this.prHistory.forEach(history => {
+                    const exercise = this.exercises.find(ex => ex.id === history.exerciseId);
+                    const exerciseName = exercise?.name || 'Unknown';
+                    
+                    if (!exerciseData[exerciseName]) {
+                        exerciseData[exerciseName] = [];
+                    }
+                    
+                    exerciseData[exerciseName].push({
+                        x: new Date(history.createdAt),
+                        y: history.weight
+                    });
+                });
+
+                // Create datasets
+                const colors = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#06B6D4'];
+                const datasets = Object.keys(exerciseData).map((exerciseName, index) => ({
+                    label: exerciseName,
+                    data: exerciseData[exerciseName].sort((a, b) => a.x - b.x),
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: colors[index % colors.length] + '20',
+                    tension: 0.3,
+                    fill: false
+                }));
+
+                // Create chart
+                this.chart = new Chart(canvas, {
+                    type: 'line',
+                    data: { datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    displayFormats: {
+                                        day: 'MMM DD',
+                                        week: 'MMM DD',
+                                        month: 'MMM YYYY'
+                                    }
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Weight (lbs)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'PR Progression Over Time'
+                            },
+                            legend: {
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            }
+
+            showMainApp() {
+                document.getElementById('authCheck').classList.add('hidden');
+                document.getElementById('notAuthenticated').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+            }
+
+            showNotAuthenticated() {
+                document.getElementById('authCheck').classList.add('hidden');
+                document.getElementById('mainApp').classList.add('hidden');
+                document.getElementById('notAuthenticated').classList.remove('hidden');
+            }
         }
 
-        editExercisePrompt(oldName) {
-          const newName = prompt(`Edit exercise name:`, oldName);
-          if (newName !== null && newName.trim() !== oldName) {
-            this.editExercise(oldName, newName.trim());
-          }
-        }
-
-        saveData() {
-          localStorage.setItem('weightTracker', JSON.stringify(this.workouts));
-        }
-
-        saveExercises() {
-          localStorage.setItem('weightTrackerExercises', JSON.stringify(this.exercises));
-        }
-
-        clearAllData() {
-          this.workouts = [];
-          this.saveData();
-          this.render();
-        }
-      }
-
-      // Initialize the app
-      const app = new WeightTracker();
+        // Initialize the app
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new PRTracker();
+        });
     </script>
-  </body>
+</body>
 </html>
