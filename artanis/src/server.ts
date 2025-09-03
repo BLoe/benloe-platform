@@ -45,14 +45,17 @@ app.use('/api/', limiter);
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests from benloe.com subdomains
+      // Allow requests from benloe.com subdomains and main domain
       if (
         !origin ||
+        origin === 'https://benloe.com' ||
+        origin === 'http://benloe.com' ||
         origin.includes('.benloe.com') ||
         origin.includes('localhost')
       ) {
         callback(null, true);
       } else {
+        console.log('CORS blocked origin:', origin);
         callback(new Error('Not allowed by CORS'));
       }
     },
