@@ -23,10 +23,14 @@ router.get('/', authenticate, async (req, res) => {
 // POST /api/exercises - Create new exercise
 router.post('/', authenticate, async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, initialWeight } = req.body;
     
     if (!name) {
       return res.status(400).json({ error: 'Exercise name is required' });
+    }
+
+    if (!initialWeight || initialWeight <= 0) {
+      return res.status(400).json({ error: 'Initial PR weight is required and must be greater than 0' });
     }
 
     // Check if exercise already exists for this user
@@ -48,7 +52,35 @@ router.post('/', authenticate, async (req, res) => {
       },
     });
 
-    res.status(201).json({ exercise });
+    // Create initial workout representing the starting PR
+    const initialWorkout = await prisma.workout.create({
+      data: {
+        exerciseId: exercise.id,
+        userId: req.user!.id,
+        weight: initialWeight,
+        reps: 1,
+        oneRM: initialWeight,
+      },
+    });
+
+    // Create PR history entry for the initial PR
+    const prHistory = await prisma.pRHistory.create({
+      data: {
+        exerciseId: exercise.id,
+        userId: req.user!.id,
+        weight: initialWeight,
+        previousWeight: null, // First PR has no previous weight
+      },
+    });
+
+    res.status(201).json({ 
+      exercise,
+      pr: {
+        weight: initialWeight,
+        createdAt: initialWorkout.createdAt,
+      },
+      prHistory,
+    });
   } catch (error) {
     console.error('Error creating exercise:', error);
     res.status(500).json({ error: 'Failed to create exercise' });
