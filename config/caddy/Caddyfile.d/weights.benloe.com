@@ -6,7 +6,7 @@ weights.benloe.com {
 
     # Handle static files
     handle {
-        root * /var/www/weights.benloe.com
+        root * /var/apps/static/weights.benloe.com
         try_files {path} {path}/ /index.html
         file_server
     }

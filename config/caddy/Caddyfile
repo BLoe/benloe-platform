@@ -2,7 +2,7 @@
 
 # Root domain
 benloe.com {
-    root * /var/www/benloe.com
+    root * /var/apps/static/benloe.com
     file_server
     encode gzip
 }
@@ -13,4 +13,4 @@ www.benloe.com {
 }
 
 # Import subdomain configurations if they exist
-import /etc/caddy/Caddyfile.d/*
+import /var/apps/config/caddy/Caddyfile.d/*
