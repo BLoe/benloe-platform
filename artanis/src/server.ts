@@ -16,6 +16,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3002;
 
+// Trust proxy for proper IP forwarding behind Caddy
+app.set('trust proxy', true);
+
 // Security middleware
 app.use(
   helmet({
