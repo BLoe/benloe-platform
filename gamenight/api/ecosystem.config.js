@@ -12,7 +12,7 @@ module.exports = {
         JWT_SECRET:
           process.env.JWT_SECRET || 'artanis-benloe-auth-jwt-2024-production-secure-key-v2',
         AUTH_SERVICE_URL: 'http://localhost:3002',
-        AUTH_DATABASE_URL: 'file:../../../artanis/prisma/artanis.db',
+        AUTH_DATABASE_URL: 'file:/var/apps/artanis/prisma/artanis.db',
         RATE_LIMIT_WINDOW_MS: '900000',
         RATE_LIMIT_MAX_REQUESTS: '100',
       },
