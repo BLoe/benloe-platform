@@ -14,6 +14,20 @@ declare global {
   }
 }
 
+// In-memory debug log storage
+export const debugLogs: string[] = [];
+const MAX_LOGS = 50;
+
+function addDebugLog(message: string): void {
+  const timestamp = new Date().toISOString();
+  const logEntry = `[${timestamp}] ${message}`;
+  debugLogs.unshift(logEntry);
+  if (debugLogs.length > MAX_LOGS) {
+    debugLogs.pop();
+  }
+  console.log(logEntry);
+}
+
 async function validateTokenWithAuthService(token: string): Promise<AuthUser | null> {
   try {
     const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:3002';
@@ -25,15 +39,19 @@ async function validateTokenWithAuthService(token: string): Promise<AuthUser | n
         'Content-Type': 'application/json',
       },
     });
-
+    
+    
     if (!response.ok) {
+      const errorText = await response.text();
+      addDebugLog(`Auth service error: ${errorText}`);
       return null;
     }
 
     const data = (await response.json()) as { user: AuthUser };
+    addDebugLog(`Auth success - user: ${data.user?.email}`);
     return data.user;
   } catch (error) {
-    console.error('Token validation error:', error);
+    addDebugLog(`Token validation error: ${error}`);
     return null;
   }
 }
@@ -43,6 +61,7 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     const token = req.cookies.token;
 
     if (!token) {
+      addDebugLog('No token found - authentication required');
       res.status(401).json({ error: 'Authentication required' });
       return;
     }

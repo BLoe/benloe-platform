@@ -15,24 +15,51 @@ You are operating on Ben's experimental VPS that hosts multiple web projects und
 ## System Architecture
 
 The server uses Caddy as the main reverse proxy, routing traffic to:
-- Static files at `/var/www/[subdomain].benloe.com/`
-- PHP applications via PHP-FPM
-- Node.js applications on various ports (managed by PM2)
+- Static files served from `/var/apps/static/[subdomain]/`
+- Node.js applications in `/var/apps/[app-name]/` on various ports (managed by PM2)
+- Legacy static files in `/var/www/[subdomain].benloe.com/` (being migrated)
 - Docker containers when needed
 - Any other runtimes as experiments require
 
-Each subdomain operates independently with its own technology choices.
+**Current Architecture (Monorepo):**
+All applications are now managed in a single monorepo structure at `/var/apps/` for better organization and shared dependencies.
 
 ## Directory Conventions
 
 ```
-/var/www/               # Static sites and PHP applications
-/var/apps/              # Node.js/full applications
-/var/repos/             # Git bare repositories for deployment
-/var/data/              # SQLite databases and persistent data
-/etc/caddy/Caddyfile.d/ # Per-subdomain Caddy configurations
-~/scripts/              # Utility and automation scripts
+/var/apps/                    # Monorepo root containing all applications
+├── artanis/                  # Authentication service (port 3002)
+├── gamenight/                # Game night management app
+├── weights-api/              # Weight tracking API (port 3003)
+├── weights/                  # Weight tracking frontend
+├── homepage/                 # Main homepage files
+├── static/                   # Static sites served by Caddy
+│   ├── benloe.com/           # Main static site
+│   └── weights.benloe.com/   # Static weights frontend
+├── config/                   # Centralized configuration
+│   └── caddy/                # Caddy configuration files
+├── docs/                     # System documentation
+├── data/                     # SQLite databases and persistent data
+├── shared/                   # Shared utilities and types
+└── logs/                     # Application logs
+
+/var/www/                     # Legacy static sites (being migrated)
+/etc/caddy/Caddyfile.d/      # Active Caddy configurations
 ```
+
+## Key Debugging Learnings
+
+**Authentication Flow Issues:**
+- Always check for JavaScript errors that occur AFTER successful authentication
+- Frontend "Authentication Required" display can be caused by unrelated JS errors during app initialization
+- Chart.js date formatting: use 'dd' not 'DD' for day formatting ('MMM dd' not 'MMM DD')
+- Mobile debugging: implement in-memory logging with copy-to-clipboard for mobile browser debugging
+
+**Systematic Debugging Process:**
+1. Verify backend authentication is actually working (check logs/responses)
+2. Check frontend receives correct data (network tab/debug logs)
+3. Look for JavaScript errors that break initialization flow after auth success
+4. Test with both mocked and real authentication to isolate issues
 
 ## Technology Preferences
 

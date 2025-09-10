@@ -71,12 +71,15 @@
         <div class="text-center bg-white p-8 rounded-lg shadow-md max-w-md">
             <h1 class="text-2xl font-bold text-gray-800 mb-4">🔐 Authentication Required</h1>
             <p class="text-gray-600 mb-6">Please sign in to access your personal weight tracker.</p>
-            <a href="https://auth.benloe.com/?redirect=https://weights.benloe.com" 
-               class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium inline-block">
-                Sign In
-            </a>
+            <div class="space-y-4">
+                <a href="https://auth.benloe.com/?redirect=https://weights.benloe.com" 
+                   class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium inline-block w-full">
+                    Sign In
+                </a>
+            </div>
         </div>
     </div>
+
 
     <!-- Main App -->
     <div id="mainApp" class="container mx-auto px-4 py-8 max-w-4xl hidden">
@@ -165,16 +168,22 @@
 
             async init() {
                 try {
+                    log('Initializing app...');
                     await this.checkAuth();
+                    log(`Auth check complete. User: ${this.user ? 'SET' : 'NULL'}`);
                     if (this.user) {
+                        log('User found, loading app data...');
                         await this.loadData();
                         this.initializeEventListeners();
                         this.render();
+                        log('Showing main app...');
                         this.showMainApp();
                     } else {
+                        log('No user found, showing auth required...');
                         this.showNotAuthenticated();
                     }
                 } catch (error) {
+                    log(`Initialization error: ${error.message}`);
                     console.error('Initialization error:', error);
                     this.showNotAuthenticated();
                 }
@@ -182,23 +191,28 @@
 
             async checkAuth() {
                 try {
-                    const response = await fetch('/api/exercises', {
+                    log('Starting auth check...');
+                    
+                    // Check authentication using our weights API user endpoint
+                    const userResponse = await fetch('/api/user/me', {
                         credentials: 'include'
                     });
                     
-                    if (response.ok) {
-                        // We can make authenticated requests, get user info
-                        const authResponse = await fetch('https://auth.benloe.com/api/auth/me', {
-                            credentials: 'include'
-                        });
-                        
-                        if (authResponse.ok) {
-                            const data = await authResponse.json();
-                            this.user = data.user;
-                        }
+                    
+                    if (userResponse.ok) {
+                        const data = await userResponse.json();
+                        this.user = data.user;
+                        log('Authentication successful');
+                        return;
+                    } else {
+                        const errorData = await userResponse.text();
                     }
+
+                    log('Authentication failed - not logged in');
+                    this.user = null;
                 } catch (error) {
-                    console.error('Auth check failed:', error);
+                    log(`Auth check failed with error: ${error.message}`);
+                    this.user = null;
                 }
             }
 
@@ -586,8 +600,8 @@
                                 type: 'time',
                                 time: {
                                     displayFormats: {
-                                        day: 'MMM DD',
-                                        week: 'MMM DD',
+                                        day: 'MMM dd',
+                                        week: 'MMM dd',
                                         month: 'MMM YYYY'
                                     }
                                 }
@@ -626,10 +640,17 @@
             }
         }
 
+        // Simple console logging
+        function log(message) {
+            console.log(`WeightsApp: ${message}`);
+        }
+
+
         // Initialize the app
         let app;
         document.addEventListener('DOMContentLoaded', () => {
             app = new PRTracker();
+
         });
     </script>
 </body>

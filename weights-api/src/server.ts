@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import { exerciseRoutes } from './routes/exercises';
 import { workoutRoutes } from './routes/workouts';
 import { prRoutes } from './routes/prs';
+import { debugLogs, authenticate } from './middleware/auth';
 
 dotenv.config();
 
@@ -53,6 +54,31 @@ app.use('/api/prs', prRoutes);
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'weights-api' });
+});
+
+// Debug logs endpoint (no auth required for debugging)
+app.get('/api/debug/logs', (req, res) => {
+  res.json({ 
+    logs: debugLogs,
+    timestamp: new Date().toISOString(),
+    totalLogs: debugLogs.length
+  });
+});
+
+// Clear debug logs endpoint 
+app.post('/api/debug/clear', (req, res) => {
+  debugLogs.length = 0; // Clear the array
+  res.json({ 
+    message: 'Debug logs cleared',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// User info endpoint (requires auth)
+app.get('/api/user/me', authenticate, (req, res) => {
+  res.json({ 
+    user: req.user 
+  });
 });
 
 // Error handling
