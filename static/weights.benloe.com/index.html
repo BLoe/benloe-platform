@@ -548,7 +548,9 @@
                     return;
                 }
 
-                container.innerHTML = this.exercises.map(exercise => {
+                container.innerHTML = this.exercises
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(exercise => {
                     const currentPR = this.prs[exercise.id]?.weight || 0;
                     return `
                         <div class="pr-card collapsed bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200 transition-all duration-300" data-exercise-id="${exercise.id}">
@@ -592,7 +594,9 @@
                     return;
                 }
 
-                list.innerHTML = this.exercises.map(exercise => `
+                list.innerHTML = this.exercises
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(exercise => `
                     <div class="flex justify-between items-center p-3 bg-white border rounded-md">
                         <div>
                             <span class="font-medium">${exercise.name}</span>
