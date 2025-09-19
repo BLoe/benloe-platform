@@ -19,16 +19,46 @@
         }
         
         .pr-celebration {
-            animation: prBounce 0.6s ease-out;
+            animation: prBounceFlashy 1.2s ease-out;
             transform-origin: center;
         }
         
-        @keyframes prBounce {
-            0% { transform: scale(1) rotateZ(0deg); }
-            25% { transform: scale(1.1) rotateZ(-3deg); }
-            50% { transform: scale(1.2) rotateZ(3deg); }
-            75% { transform: scale(1.1) rotateZ(-1deg); }
-            100% { transform: scale(1) rotateZ(0deg); }
+        @keyframes prBounceFlashy {
+            0% { 
+                transform: scale(1) rotateZ(0deg); 
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                filter: hue-rotate(0deg) brightness(1);
+            }
+            10% { 
+                transform: scale(1.3) rotateZ(-5deg); 
+                box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+                filter: hue-rotate(60deg) brightness(1.2);
+            }
+            25% { 
+                transform: scale(1.4) rotateZ(5deg); 
+                box-shadow: 0 12px 35px rgba(59, 130, 246, 0.5);
+                filter: hue-rotate(120deg) brightness(1.3);
+            }
+            40% { 
+                transform: scale(1.2) rotateZ(-3deg); 
+                box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
+                filter: hue-rotate(180deg) brightness(1.1);
+            }
+            60% { 
+                transform: scale(1.1) rotateZ(2deg); 
+                box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+                filter: hue-rotate(240deg) brightness(1.05);
+            }
+            80% { 
+                transform: scale(1.05) rotateZ(-1deg); 
+                box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+                filter: hue-rotate(300deg) brightness(1.02);
+            }
+            100% { 
+                transform: scale(1) rotateZ(0deg); 
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                filter: hue-rotate(360deg) brightness(1);
+            }
         }
         
         .pr-number {
@@ -54,6 +84,61 @@
         
         .increment-btn:active {
             transform: scale(0.95);
+        }
+
+        /* Collapsible card styles */
+        .pr-card {
+            cursor: pointer;
+            overflow: hidden;
+        }
+        
+        .pr-card.collapsed {
+            height: 60px;
+        }
+        
+        .pr-card.expanded {
+            height: auto;
+        }
+        
+        .pr-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            min-height: 60px;
+        }
+        
+        .pr-card-content {
+            padding: 0 20px 20px 20px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        
+        .pr-card.expanded .pr-card-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .expand-icon {
+            transition: transform 0.3s ease;
+            font-size: 18px;
+            color: #6b7280;
+        }
+        
+        .pr-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+        
+        .pr-card-title {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .pr-card-value {
+            font-weight: 700;
+            color: #2563eb;
+            font-size: 18px;
         }
     </style>
 </head>
@@ -406,7 +491,15 @@
                     prCard.classList.add('pr-celebration');
                     setTimeout(() => {
                         prCard.classList.remove('pr-celebration');
-                    }, 600);
+                    }, 1200);
+                }
+            }
+
+            toggleCard(exerciseId) {
+                const prCard = document.querySelector(`[data-exercise-id="${exerciseId}"]`);
+                if (prCard) {
+                    prCard.classList.toggle('collapsed');
+                    prCard.classList.toggle('expanded');
                 }
             }
 
@@ -458,25 +551,33 @@
                 container.innerHTML = this.exercises.map(exercise => {
                     const currentPR = this.prs[exercise.id]?.weight || 0;
                     return `
-                        <div class="pr-card bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200" data-exercise-id="${exercise.id}">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">${exercise.name}</h3>
-                            <div class="text-center mb-4">
-                                <div class="text-3xl font-bold text-blue-600 pr-number">${currentPR} lbs</div>
-                                <div class="text-sm text-gray-500">Current PR</div>
+                        <div class="pr-card collapsed bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200 transition-all duration-300" data-exercise-id="${exercise.id}">
+                            <div class="pr-card-header" onclick="app.toggleCard('${exercise.id}')">
+                                <div class="flex items-center gap-4">
+                                    <span class="pr-card-title">${exercise.name}</span>
+                                    <span class="pr-card-value">${currentPR} lbs</span>
+                                </div>
+                                <div class="expand-icon">▼</div>
                             </div>
-                            <div class="flex gap-2 justify-center">
-                                <button onclick="app.handleIncrementPR('${exercise.id}', 2.5)" 
-                                        class="increment-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-medium">
-                                    +2.5
-                                </button>
-                                <button onclick="app.handleIncrementPR('${exercise.id}', 5)" 
-                                        class="increment-btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium">
-                                    +5
-                                </button>
-                                <button onclick="app.handleIncrementPR('${exercise.id}', 10)" 
-                                        class="increment-btn bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-sm font-medium">
-                                    +10
-                                </button>
+                            <div class="pr-card-content">
+                                <div class="text-center mb-4">
+                                    <div class="text-3xl font-bold text-blue-600 pr-number">${currentPR} lbs</div>
+                                    <div class="text-sm text-gray-500">Current PR</div>
+                                </div>
+                                <div class="flex gap-2 justify-center">
+                                    <button onclick="app.handleIncrementPR('${exercise.id}', 2.5)" 
+                                            class="increment-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                        +2.5
+                                    </button>
+                                    <button onclick="app.handleIncrementPR('${exercise.id}', 5)" 
+                                            class="increment-btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                        +5
+                                    </button>
+                                    <button onclick="app.handleIncrementPR('${exercise.id}', 10)" 
+                                            class="increment-btn bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                        +10
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
