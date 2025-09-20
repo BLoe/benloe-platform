@@ -108,6 +108,20 @@
             padding: 16px 20px;
             min-height: 60px;
         }
+
+        .pr-card-header-left {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .pr-card-header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
         
         .pr-card-content {
             padding: 0 20px 20px 20px;
@@ -134,6 +148,20 @@
         .pr-card-title {
             font-weight: 600;
             color: #1f2937;
+        }
+
+        .pr-card-title.collapsed {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        .pr-card-title.expanded {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: initial;
+            max-width: none;
         }
         
         .pr-card-value {
@@ -501,6 +529,13 @@
                 if (prCard) {
                     prCard.classList.toggle('collapsed');
                     prCard.classList.toggle('expanded');
+
+                    // Toggle title ellipsis classes
+                    const title = prCard.querySelector('.pr-card-title');
+                    if (title) {
+                        title.classList.toggle('collapsed');
+                        title.classList.toggle('expanded');
+                    }
                 }
             }
 
@@ -556,14 +591,17 @@
                     return `
                         <div class="pr-card collapsed bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200 transition-all duration-300" data-exercise-id="${exercise.id}">
                             <div class="pr-card-header" onclick="app.toggleCard('${exercise.id}')">
-                                <div class="flex items-center gap-4">
-                                    <span class="pr-card-title">${exercise.name}</span>
-                                    <span class="pr-card-value">${currentPR} lbs</span>
+                                <div class="pr-card-header-left">
+                                    <span class="pr-card-title collapsed">${exercise.name}</span>
                                 </div>
-                                <div class="expand-icon">▼</div>
+                                <div class="pr-card-header-right">
+                                    <span class="pr-card-value">${currentPR} lbs</span>
+                                    <div class="expand-icon">▼</div>
+                                </div>
                             </div>
                             <div class="pr-card-content">
                                 <div class="text-center mb-4">
+                                    <div class="text-xl font-semibold text-gray-800 mb-2">${exercise.name}</div>
                                     <div class="text-3xl font-bold text-blue-600 pr-number">${currentPR} lbs</div>
                                     <div class="text-sm text-gray-500">Current PR</div>
                                 </div>
