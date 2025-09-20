@@ -176,14 +176,14 @@ export default function CreateEventDialog({
                   </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Game Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Game *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Game *</label>
                     <Combobox value={selectedGame} onChange={setSelectedGame}>
                       <div className="relative">
                         <Combobox.Input
-                          className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-10"
+                          className="w-full h-11 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-10 px-3 text-sm"
                           displayValue={(game: Game | null) => game?.name || ''}
                           onChange={(event) => setGameQuery(event.target.value)}
                           placeholder="Select a game..."
@@ -230,7 +230,7 @@ export default function CreateEventDialog({
 
                   {/* Event Title */}
                   <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
                       Event Title (optional)
                     </label>
                     <input
@@ -238,7 +238,7 @@ export default function CreateEventDialog({
                       id="title"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      className="w-full h-11 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 text-sm"
                       placeholder={selectedGame ? `${selectedGame.name} Night` : 'Game Night'}
                     />
                   </div>
@@ -247,7 +247,7 @@ export default function CreateEventDialog({
                   <div>
                     <label
                       htmlFor="dateTime"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-medium text-gray-700 mb-2"
                     >
                       Date & Time *
                     </label>
@@ -258,10 +258,10 @@ export default function CreateEventDialog({
                         value={dateTime}
                         onChange={(e) => setDateTime(e.target.value)}
                         min={minDateTime}
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pl-10"
+                        className="w-full h-11 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pl-10 pr-3 text-sm"
                         required
                       />
-                      <CalendarIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     </div>
                   </div>
 
@@ -269,7 +269,7 @@ export default function CreateEventDialog({
                   <div>
                     <label
                       htmlFor="location"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-medium text-gray-700 mb-2"
                     >
                       Location (optional)
                     </label>
@@ -279,10 +279,10 @@ export default function CreateEventDialog({
                         id="location"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pl-10"
+                        className="w-full h-11 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pl-10 pr-3 text-sm"
                         placeholder="Where will you play?"
                       />
-                      <MapPinIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <MapPinIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     </div>
                   </div>
 
@@ -290,7 +290,7 @@ export default function CreateEventDialog({
                   <div>
                     <label
                       htmlFor="description"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-medium text-gray-700 mb-2"
                     >
                       Description (optional)
                     </label>
@@ -299,7 +299,7 @@ export default function CreateEventDialog({
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       rows={3}
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2 text-sm resize-none"
                       placeholder="Add any details about the event..."
                     />
                   </div>
@@ -308,7 +308,7 @@ export default function CreateEventDialog({
                   <div>
                     <label
                       htmlFor="commitmentDeadline"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-medium text-gray-700 mb-2"
                     >
                       RSVP Deadline (optional)
                     </label>
@@ -320,11 +320,11 @@ export default function CreateEventDialog({
                         onChange={(e) => setCommitmentDeadline(e.target.value)}
                         min={minDateTime}
                         max={dateTime}
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pl-10"
+                        className="w-full h-11 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pl-10 pr-3 text-sm"
                       />
-                      <ClockIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <ClockIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 mt-2">
                       When should people commit by? Leave empty for no deadline.
                     </p>
                   </div>
@@ -353,7 +353,7 @@ export default function CreateEventDialog({
                           <div>
                             <label
                               htmlFor="recurringFrequency"
-                              className="block text-sm font-medium text-gray-700 mb-1"
+                              className="block text-sm font-medium text-gray-700 mb-2"
                             >
                               Frequency
                             </label>
@@ -365,7 +365,7 @@ export default function CreateEventDialog({
                                   e.target.value as 'WEEKLY' | 'MONTHLY' | 'YEARLY'
                                 )
                               }
-                              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                              className="w-full h-11 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 text-sm"
                             >
                               <option value="WEEKLY">Weekly</option>
                               <option value="MONTHLY">Monthly</option>
@@ -376,7 +376,7 @@ export default function CreateEventDialog({
                           <div>
                             <label
                               htmlFor="recurringInterval"
-                              className="block text-sm font-medium text-gray-700 mb-1"
+                              className="block text-sm font-medium text-gray-700 mb-2"
                             >
                               Every
                             </label>
@@ -390,9 +390,9 @@ export default function CreateEventDialog({
                                 onChange={(e) =>
                                   setRecurringInterval(parseInt(e.target.value) || 1)
                                 }
-                                className="w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                className="w-20 h-11 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 text-sm"
                               />
-                              <span className="ml-2 text-sm text-gray-600">
+                              <span className="ml-3 text-sm text-gray-600">
                                 {recurringFrequency === 'WEEKLY' &&
                                   (recurringInterval === 1 ? 'week' : 'weeks')}
                                 {recurringFrequency === 'MONTHLY' &&
@@ -407,7 +407,7 @@ export default function CreateEventDialog({
                         <div>
                           <label
                             htmlFor="recurringEndDate"
-                            className="block text-sm font-medium text-gray-700 mb-1"
+                            className="block text-sm font-medium text-gray-700 mb-2"
                           >
                             End Date (optional)
                           </label>
@@ -417,9 +417,9 @@ export default function CreateEventDialog({
                             value={recurringEndDate}
                             onChange={(e) => setRecurringEndDate(e.target.value)}
                             min={dateTime ? dateTime.split('T')[0] : ''}
-                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            className="w-full h-11 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 text-sm"
                           />
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-gray-500 mt-2">
                             Leave empty to create events for the next year. Maximum 52 occurrences.
                           </p>
                         </div>
@@ -433,10 +433,10 @@ export default function CreateEventDialog({
                     </div>
                   )}
 
-                  <div className="flex justify-end space-x-3 pt-4">
+                  <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                     <button
                       type="button"
-                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
                       onClick={handleClose}
                       disabled={submitting}
                     >
@@ -444,7 +444,7 @@ export default function CreateEventDialog({
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                      className="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors"
                       disabled={!selectedGame || !dateTime || submitting || eventLoading}
                     >
                       {submitting
